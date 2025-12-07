@@ -1,0 +1,83 @@
+* Akshay Chanda 2024102014 
+.include TSMC_180nm.txt
+.param LAMBDA = 0.09u
+.global gnd vdd
+.param k = 2
+* x-c1b
+* y-c2a
+.subckt dff in clk out vdd gnd
+.param k=2
+
+M1 c1a in vdd vdd CMOSP W={k*40*LAMBDA} L={2*LAMBDA}
++ AS={5*k*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*40*LAMBDA} 
++ AD={5*k*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*40*LAMBDA}
+M2 c1b clk c1a vdd CMOSP W={k*40*LAMBDA} L={2*LAMBDA}
++ AS={5*k*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*40*LAMBDA} 
++ AD={5*k*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*40*LAMBDA}
+M3 c1b in gnd gnd CMOSN W={20*LAMBDA} L={2*LAMBDA}
++ AS={5*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*20*LAMBDA}
++ AD={5*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*20*LAMBDA}
+
+M4 c2a clk vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M5 c2a c1b c2b gnd CMOSN W={40*LAMBDA} L={2*LAMBDA}
++ AS={5*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*40*LAMBDA}
++ AD={5*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*40*LAMBDA}
+M6 c2b clk gnd gnd CMOSN W={40*LAMBDA} L={2*LAMBDA}
++ AS={5*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*40*LAMBDA}
++ AD={5*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*40*LAMBDA}
+
+
+M7 c3a c2a vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M8 c3a clk c3b gnd CMOSN W={40*LAMBDA} L={2*LAMBDA}
++ AS={5*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*40*LAMBDA}
++ AD={5*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*40*LAMBDA}
+M9 c3b c2a gnd gnd CMOSN W={40*LAMBDA} L={2*LAMBDA}
++ AS={5*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*40*LAMBDA}
++ AD={5*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*40*LAMBDA}
+
+M10 out c3a vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M11 out c3a gnd gnd CMOSN W={20*LAMBDA} L={2*LAMBDA}
++ AS={5*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*20*LAMBDA}
++ AD={5*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*20*LAMBDA}
+
+.ends dff
+
+Xdff in clk out vdd gnd dff
+vdd vdd gnd 1.8
+
+* Testbench sources
+* 100 MHz clock, 50% duty, rise/fall ~50 ps, start after 1 ns
+Vclk clk gnd PULSE(0 1.8 5n 0 0 7.5n 15n)
+* Data input changes mid-low phase to avoid edge races with clk
+* Toggles roughly every 10 ns, offset to be away from clk rising edges
+Vx Xdff.c1b gnd 1.8
+
+
+.save v(in) v(clk) v(out) v(xdff.c1b) v(xdff.c2a) v(xdff.c3a)
+
+
+.control
+tran 1p 50n
+* Quick visibility of key nodes; offset signals for readability
+set curplottitle = "Akshay Chanda 2024102014 - Hold"
+plot v(clk) v(Xdff.c2a)+2
+
+meas tran t_hold TRIG v(clk) VAL=0.9 RISE=2 TARG v(Xdff.c2a) VAL=0.9 FALL=2
+.endc
+
+.end
+
+* tc2q_rise           =  4.958509e-11 targ=  3.105009e-08 trig=  3.100050e-08
+* tc2q_fall           =  1.217517e-10 targ=  2.112225e-08 trig=  2.100050e-08
+* t_in_c1b_fall       =  6.893660e-11 targ=  8.118937e-09 trig=  8.050000e-09
+* t_in_c1b_rise       =  6.068387e-11 targ=  1.811068e-08 trig=  1.805000e-08
+
+
+* t_hold              =  3.474975e-11 
+* targ=  2.003525e-08 trig=  2.000050e-08

@@ -1,0 +1,101 @@
+magic
+tech scmos
+timestamp 1763238623
+<< nwell >>
+rect 0 100 56 152
+<< ntransistor >>
+rect 11 -10 13 90
+rect 19 -10 21 90
+rect 27 -10 29 90
+rect 35 -10 37 90
+rect 43 -10 45 90
+<< ptransistor >>
+rect 11 106 13 146
+rect 19 106 21 146
+rect 27 106 29 146
+rect 35 106 37 146
+rect 43 106 45 146
+<< ndiffusion >>
+rect 10 -10 11 90
+rect 13 -10 14 90
+rect 18 -10 19 90
+rect 21 -10 22 90
+rect 26 -10 27 90
+rect 29 -10 30 90
+rect 34 -10 35 90
+rect 37 -10 38 90
+rect 42 -10 43 90
+rect 45 -10 46 90
+<< pdiffusion >>
+rect 10 106 11 146
+rect 13 106 14 146
+rect 18 106 19 146
+rect 21 106 22 146
+rect 26 106 27 146
+rect 29 106 30 146
+rect 34 106 35 146
+rect 37 106 38 146
+rect 42 106 43 146
+rect 45 106 46 146
+<< ndcontact >>
+rect 6 -10 10 90
+rect 14 -10 18 90
+rect 22 -10 26 90
+rect 30 -10 34 90
+rect 38 -10 42 90
+rect 46 -10 50 90
+<< pdcontact >>
+rect 6 106 10 146
+rect 14 106 18 146
+rect 22 106 26 146
+rect 30 106 34 146
+rect 38 106 42 146
+rect 46 106 50 146
+<< polysilicon >>
+rect 11 146 13 159
+rect 19 146 21 159
+rect 27 146 29 159
+rect 35 146 37 159
+rect 43 146 45 159
+rect 11 90 13 106
+rect 19 90 21 106
+rect 27 90 29 106
+rect 35 90 37 106
+rect 43 90 45 106
+rect 11 -13 13 -10
+rect 19 -13 21 -10
+rect 27 -13 29 -10
+rect 35 -13 37 -10
+rect 43 -13 45 -10
+<< polycontact >>
+rect 10 159 14 163
+rect 18 159 22 163
+rect 26 159 30 163
+rect 34 159 38 163
+rect 42 159 46 163
+<< metal1 >>
+rect 10 163 14 171
+rect 18 163 22 171
+rect 26 163 30 171
+rect 34 163 38 171
+rect 42 163 46 171
+rect 6 150 42 154
+rect 6 146 10 150
+rect 22 146 26 150
+rect 38 146 42 150
+rect 14 102 18 106
+rect 30 102 34 106
+rect 46 102 50 106
+rect 14 98 61 102
+rect 46 90 50 98
+rect 6 -20 10 -10
+<< labels >>
+rlabel metal1 10 167 14 171 5 a
+rlabel metal1 18 167 22 171 5 b
+rlabel metal1 26 167 30 171 5 c
+rlabel metal1 34 167 38 171 5 d
+rlabel metal1 42 167 46 171 5 e
+rlabel metal1 6 150 42 154 1 vdd
+rlabel metal1 6 -20 10 -16 1 gnd
+rlabel metal1 57 98 61 102 7 out
+<< end >>

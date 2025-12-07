@@ -1,0 +1,63 @@
+# VLSI Project files
+*.pdf
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# NGSPICE outputs
+*.raw
+*.mt0
+*.print
+
+# MAGIC backup files
+*.mag~
+*.mag#
+
+# Verilog simulation
+*.vvp
+*.lxt
+*.lxt2
+final
+final_exhaustive
+
+# FPGA specific
+*.jou
+*.str
+*.xpr.backup
+*.bit
+*.ltx
+*.debug
+*.dcp
+*_wrapper.v
+*_wrapper.vhd
+*.rpt
+*.xml
+.Xil/
+
+# Vivado folders (keep project structure but ignore outputs)
+Verilog/FPGA/project_1.cache/
+Verilog/FPGA/project_1.runs/synth_1/*.log
+Verilog/FPGA/project_1.runs/synth_1/*.rpt
+Verilog/FPGA/project_1.runs/synth_1/*.dcp
+Verilog/FPGA/project_1.runs/impl_1/*.log
+Verilog/FPGA/project_1.runs/impl_1/*.rpt
+Verilog/FPGA/project_1.runs/impl_1/*.dcp
+Verilog/FPGA/project_1.runs/impl_1/*.bit
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*.bak
+*~
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo

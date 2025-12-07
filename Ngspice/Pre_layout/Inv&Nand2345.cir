@@ -1,0 +1,220 @@
+* Akshay Chanda 2024102014 
+.include TSMC_180nm.txt
+.param LAMBDA = 0.09u
+.global gnd vdd
+.param k = 2
+
+.subckt inv in out vdd gnd
+.param k=2
+
+M1 out in vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+
+M2 out in gnd gnd CMOSN W={20*LAMBDA} L={2*LAMBDA}
++ AS={5*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*20*LAMBDA}
++ AD={5*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*20*LAMBDA}
+
+.ends inv
+
+
+.subckt Nand2 a b out vdd gnd
+.param k=2
+
+M1 out a vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M2 out b vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M3 out a n1 gnd CMOSN W={40*LAMBDA} L={2*LAMBDA}
++ AS={5*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*40*LAMBDA}
++ AD={5*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*40*LAMBDA}
+M4 n1 b gnd gnd CMOSN W={40*LAMBDA} L={2*LAMBDA}
++ AS={5*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*40*LAMBDA}
++ AD={5*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*40*LAMBDA}
+
+.ends Nand2
+
+
+.subckt Nand3 a b c out vdd gnd
+.param k=2
+
+M1 out a vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M2 out b vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M3 out c vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M4 out a n1 gnd CMOSN W={60*LAMBDA} L={2*LAMBDA}
++ AS={5*60*LAMBDA*LAMBDA} PS={10*LAMBDA+2*60*LAMBDA}
++ AD={5*60*LAMBDA*LAMBDA} PD={10*LAMBDA+2*60*LAMBDA}
+M5 n1 b n2 gnd CMOSN W={60*LAMBDA} L={2*LAMBDA}
++ AS={5*60*LAMBDA*LAMBDA} PS={10*LAMBDA+2*60*LAMBDA}
++ AD={5*60*LAMBDA*LAMBDA} PD={10*LAMBDA+2*60*LAMBDA}
+M6 n2 c gnd gnd CMOSN W={60*LAMBDA} L={2*LAMBDA}
++ AS={5*60*LAMBDA*LAMBDA} PS={10*LAMBDA+2*60*LAMBDA}
++ AD={5*60*LAMBDA*LAMBDA} PD={10*LAMBDA+2*60*LAMBDA}
+
+.ends Nand3
+
+
+.subckt Nand4 a b c d out vdd gnd
+.param k=2
+
+M1 out a vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M2 out b vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M3 out c vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M4 out d vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M5 out a n1 gnd CMOSN W={80*LAMBDA} L={2*LAMBDA}
++ AS={5*80*LAMBDA*LAMBDA} PS={10*LAMBDA+2*80*LAMBDA}
++ AD={5*80*LAMBDA*LAMBDA} PD={10*LAMBDA+2*80*LAMBDA}
+M6 n1 b n2 gnd CMOSN W={80*LAMBDA} L={2*LAMBDA}
++ AS={5*80*LAMBDA*LAMBDA} PS={10*LAMBDA+2*80*LAMBDA}
++ AD={5*80*LAMBDA*LAMBDA} PD={10*LAMBDA+2*80*LAMBDA}
+M7 n2 c n3 gnd CMOSN W={80*LAMBDA} L={2*LAMBDA}
++ AS={5*80*LAMBDA*LAMBDA} PS={10*LAMBDA+2*80*LAMBDA}
++ AD={5*80*LAMBDA*LAMBDA} PD={10*LAMBDA+2*80*LAMBDA}
+M8 n3 d gnd gnd CMOSN W={80*LAMBDA} L={2*LAMBDA}
++ AS={5*80*LAMBDA*LAMBDA} PS={10*LAMBDA+2*80*LAMBDA}
++ AD={5*80*LAMBDA*LAMBDA} PD={10*LAMBDA+2*80*LAMBDA}
+
+.ends Nand4
+
+
+.subckt Nand5 a b c d e out vdd gnd
+.param k=2
+
+M1 out a vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M2 out b vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M3 out c vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M4 out d vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M5 out e vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M6 out a n1 gnd CMOSN W={100*LAMBDA} L={2*LAMBDA}
++ AS={5*100*LAMBDA*LAMBDA} PS={10*LAMBDA+2*100*LAMBDA}
++ AD={5*100*LAMBDA*LAMBDA} PD={10*LAMBDA+2*100*LAMBDA}
+M7 n1 b n2 gnd CMOSN W={100*LAMBDA} L={2*LAMBDA}
++ AS={5*100*LAMBDA*LAMBDA} PS={10*LAMBDA+2*100*LAMBDA}
++ AD={5*100*LAMBDA*LAMBDA} PD={10*LAMBDA+2*100*LAMBDA}
+M8 n2 c n3 gnd CMOSN W={100*LAMBDA} L={2*LAMBDA}
++ AS={5*100*LAMBDA*LAMBDA} PS={10*LAMBDA+2*100*LAMBDA}
++ AD={5*100*LAMBDA*LAMBDA} PD={10*LAMBDA+2*100*LAMBDA}
+M9 n3 d n4 gnd CMOSN W={100*LAMBDA} L={2*LAMBDA}
++ AS={5*100*LAMBDA*LAMBDA} PS={10*LAMBDA+2*100*LAMBDA}
++ AD={5*100*LAMBDA*LAMBDA} PD={10*LAMBDA+2*100*LAMBDA}
+M10 n4 e gnd gnd CMOSN W={100*LAMBDA} L={2*LAMBDA}
++ AS={5*100*LAMBDA*LAMBDA} PS={10*LAMBDA+2*100*LAMBDA}
++ AD={5*100*LAMBDA*LAMBDA} PD={10*LAMBDA+2*100*LAMBDA}
+
+.ends Nand5
+
+
+* XOR Subcircuit (using 4 NAND2 gates)
+.subckt xor2 a b out vdd gnd
+
+* XOR implementation: out = NAND(NAND(a,NAND(a,b)), NAND(b,NAND(a,b)))
+Xnand1 a b n1 vdd gnd Nand2
+Xnand2 a n1 n2 vdd gnd Nand2
+Xnand3 b n1 n3 vdd gnd Nand2
+Xnand4 n2 n3 out vdd gnd Nand2
+
+.ends xor2
+
+
+vdd vdd gnd 1.8
+
+Va a gnd PULSE(0 1.8 0 0 0 40n 80n)
+Vb b gnd PULSE(0 1.8 0 0 0 20n 40n)
+Vc c gnd PULSE(0 1.8 0 0 0 10n 20n)
+Vd d gnd PULSE(0 1.8 0 0 0 5n 10n)
+Ve e gnd PULSE(0 1.8 0 0 0 2.5n 5n)
+
+* code instantiations
+Xinv a out_inv vdd gnd inv
+Xnand2 a b out_nand2 vdd gnd Nand2
+Xnand3 a b c out_nand3 vdd gnd Nand3
+Xnand4 a b c d out_nand4 vdd gnd Nand4
+Xnand5 a b c d e out_nand5 vdd gnd Nand5
+Xxor2 a b out_xor2 vdd gnd xor2
+
+* .save v(a) v(b) v(c) v(d) v(e) v(out_inv) v(out_nand2) v(out_nand3) v(out_nand4) v(out_nand5) v(out_xor2)
+.tran 10p 160n
+
+.control
+run
+set curplottitle = "Akshay Chanda 2024102014 - Gates Comparison"
+plot v(a)+18 v(b)+15 v(out_inv)+12 v(out_nand2)+9 v(out_nand3)+6 v(out_nand4)+3 v(out_nand5)
+
+set curplottitle = "Akshay Chanda 2024102014 - Inverter"
+plot v(a)+2 v(out_inv)
+
+set curplottitle = "Akshay Chanda 2024102014 - NAND2"
+plot v(a)+4 v(b)+2 v(out_nand2)
+
+set curplottitle = "Akshay Chanda 2024102014 - NAND3"
+plot v(a)+6 v(b)+4 v(c)+2 v(out_nand3)
+
+set curplottitle = "Akshay Chanda 2024102014 - NAND4"
+plot v(a)+8 v(b)+6 v(c)+4 v(d)+2 v(out_nand4)
+
+set curplottitle = "Akshay Chanda 2024102014 - NAND5"
+plot v(a)+10 v(b)+8 v(c)+6 v(d)+4 v(e)+2 v(out_nand5)
+
+set curplottitle = "Akshay Chanda 2024102014 - XOR2"
+plot v(a)+4 v(b)+2 v(out_xor2)
+
+* Delay measurements for Inverter
+meas tran tpdr_inv TRIG v(a) VAL=0.9 RISE=1 TARG v(out_inv) VAL=0.9 FALL=1
+meas tran tpdf_inv TRIG v(a) VAL=0.9 FALL=1 TARG v(out_inv) VAL=0.9 RISE=1
+meas tran tpd_inv param='(abs(tpdr_inv)+abs(tpdf_inv))/2'
+
+* Delay measurements for NAND2
+meas tran tpdr_nand2 TRIG v(a) VAL=0.9 RISE=1 TARG v(out_nand2) VAL=0.9 FALL=1
+meas tran tpdf_nand2 TRIG v(a) VAL=0.9 FALL=1 TARG v(out_nand2) VAL=0.9 RISE=1
+meas tran tpd_nand2 param='(abs(tpdr_nand2)+abs(tpdf_nand2))/2'
+
+* Delay measurements for NAND3
+meas tran tpdr_nand3 TRIG v(a) VAL=0.9 RISE=1 TARG v(out_nand3) VAL=0.9 FALL=1
+meas tran tpdf_nand3 TRIG v(a) VAL=0.9 FALL=1 TARG v(out_nand3) VAL=0.9 RISE=1
+meas tran tpd_nand3 param='(abs(tpdr_nand3)+abs(tpdf_nand3))/2'
+
+* Delay measurements for NAND4
+meas tran tpdr_nand4 TRIG v(a) VAL=0.9 RISE=1 TARG v(out_nand4) VAL=0.9 FALL=1
+meas tran tpdf_nand4 TRIG v(a) VAL=0.9 FALL=1 TARG v(out_nand4) VAL=0.9 RISE=1
+meas tran tpd_nand4 param='(abs(tpdr_nand4)+abs(tpdf_nand4))/2'
+
+* Delay measurements for NAND5
+meas tran tpdr_nand5 TRIG v(a) VAL=0.9 RISE=1 TARG v(out_nand5) VAL=0.9 FALL=1
+meas tran tpdf_nand5 TRIG v(a) VAL=0.9 FALL=1 TARG v(out_nand5) VAL=0.9 RISE=1
+meas tran tpd_nand5 param='(abs(tpdr_nand5)+abs(tpdf_nand5))/2'
+
+* Delay measurements for XOR2
+meas tran tpdr_xor2 TRIG v(a) VAL=0.9 RISE=1 TARG v(out_xor2) VAL=0.9 RISE=1
+meas tran tpdf_xor2 TRIG v(a) VAL=0.9 FALL=1 TARG v(out_xor2) VAL=0.9 FALL=1
+meas tran tpd_xor2 param='(abs(tpdr_xor2)+abs(tpdf_xor2))/2'
+
+print tpd_inv tpd_nand2 tpd_nand3 tpd_nand4 tpd_nand5 tpd_xor2
+.endc
+
+.end

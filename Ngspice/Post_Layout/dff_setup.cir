@@ -1,0 +1,112 @@
+* Akshay Chanda 2024102014 
+.include TSMC_180nm.txt
+.param LAMBDA = 0.09u
+.global gnd vdd
+.param k = 2
+
+
+
+vdd vdd gnd 1.8
+
+* Testbench sources
+* 100 MHz clock, 50% duty, rise/fall ~50 ps, start after 1 ns
+Vclk clk gnd 0
+* Data input changes mid-low phase to avoid edge races with clk
+* Toggles roughly every 10 ns, offset to be away from clk rising edges
+Vin in gnd PULSE(0 1.8 5n 0 0 7.5n 15n)
+* SPICE3 file created from dff.ext - technology: scmos
+
+.option scale=0.09u
+
+M1000 a_31_n27# in vdd w_18_n34# CMOSP w=80 l=2
++  ad=480 pd=172 as=1000 ps=440
+M1001 out_bar y vdd w_106_n20# CMOSP w=40 l=2
++  ad=200 pd=90 as=0 ps=0
+M1002 out out_bar gnd Gnd CMOSN w=20 l=2
++  ad=100 pd=50 as=600 ps=280
+M1003 out out_bar vdd w_138_n34# CMOSP w=40 l=2
++  ad=200 pd=90 as=0 ps=0
+M1004 x clk a_31_n27# w_18_n34# CMOSP w=80 l=2
++  ad=480 pd=172 as=0 ps=0
+M1005 y clk vdd w_57_n20# CMOSP w=40 l=2
++  ad=200 pd=90 as=0 ps=0
+M1006 a_119_n69# y gnd Gnd CMOSN w=40 l=2
++  ad=240 pd=92 as=0 ps=0
+M1007 a_70_n69# clk gnd Gnd CMOSN w=40 l=2
++  ad=240 pd=92 as=0 ps=0
+M1008 out_bar clk a_119_n69# Gnd CMOSN w=40 l=2
++  ad=200 pd=90 as=0 ps=0
+M1009 x in gnd Gnd CMOSN w=20 l=2
++  ad=100 pd=50 as=0 ps=0
+M1010 y x a_70_n69# Gnd CMOSN w=40 l=2
++  ad=200 pd=90 as=0 ps=0
+C0 a_70_n69# x 0.05fF
+C1 a_31_n27# w_18_n34# 0.02fF
+C2 in w_18_n34# 0.13fF
+C3 clk w_18_n34# 0.08fF
+C4 a_31_n27# x 0.82fF
+C5 y a_70_n69# 0.41fF
+C6 vdd a_31_n27# 0.88fF
+C7 gnd x 0.41fF
+C8 clk x 0.12fF
+C9 vdd in 0.02fF
+C10 a_119_n69# gnd 0.46fF
+C11 out_bar gnd 0.05fF
+C12 vdd clk 0.35fF
+C13 a_119_n69# clk 0.05fF
+C14 clk w_57_n20# 0.08fF
+C15 clk out_bar 0.12fF
+C16 out gnd 0.21fF
+C17 y clk 0.48fF
+C18 vdd w_106_n20# 0.07fF
+C19 w_18_n34# x 0.03fF
+C20 out_bar w_106_n20# 0.09fF
+C21 a_70_n69# gnd 0.46fF
+C22 vdd w_18_n34# 0.10fF
+C23 y w_106_n20# 0.08fF
+C24 w_138_n34# vdd 0.09fF
+C25 w_138_n34# out_bar 0.06fF
+C26 w_138_n34# out 0.06fF
+C27 vdd w_57_n20# 0.08fF
+C28 vdd out_bar 0.44fF
+C29 a_119_n69# out_bar 0.41fF
+C30 in gnd 0.04fF
+C31 vdd out 0.45fF
+C32 out out_bar 0.05fF
+C33 clk in 0.06fF
+C34 clk gnd 0.05fF
+C35 y x 0.02fF
+C36 vdd y 0.55fF
+C37 y w_57_n20# 0.06fF
+C38 a_119_n69# Gnd 0.02fF
+C39 a_70_n69# Gnd 0.02fF
+C40 gnd Gnd 0.32fF
+C41 out Gnd 0.07fF
+C42 out_bar Gnd 0.24fF
+C43 y Gnd 1.24fF
+C44 x Gnd 0.40fF
+C45 vdd Gnd 0.00fF
+C46 in Gnd 0.46fF
+C47 clk Gnd 0.97fF
+C48 w_138_n34# Gnd 0.44fF
+C49 w_106_n20# Gnd 0.16fF
+C50 w_57_n20# Gnd 1.25fF
+C51 w_18_n34# Gnd 0.46fF
+
+
+
+* plot -i(vdd)
+
+.control
+tran 50p 50n
+* Quick visibility of key nodes; offset signals for readability
+set curplottitle = "Akshay Chanda 2024102014 - Setup"
+plot v(in) v(x)+2
+
+* Measure c1b-to-c2a rise time
+meas tran t_setup_rise TRIG v(in) VAL=0.9 RISE=2 TARG v(x) VAL=0.9 FALL=2
+* Measure c1b-to-c2a fall time
+meas tran t_setup_fall TRIG v(in) VAL=0.9 FALL=2 TARG v(x) VAL=0.9 RISE=2
+.endc
+
+.end

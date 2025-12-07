@@ -1,0 +1,290 @@
+
+* Akshay Chanda 2024102014 
+.include TSMC_180nm.txt
+.param LAMBDA = 0.09u
+.global gnd vdd
+.param k = 2
+
+
+
+.subckt inv in out vdd gnd
+.param k=2
+
+M1 out in vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+
+M2 out in gnd gnd CMOSN W={20*LAMBDA} L={2*LAMBDA}
++ AS={5*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*20*LAMBDA}
++ AD={5*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*20*LAMBDA}
+
+.ends inv
+
+
+.subckt Nand2 a b out vdd gnd
+.param k=2
+
+M1 out a vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M2 out b vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M3 out a n1 gnd CMOSN W={40*LAMBDA} L={2*LAMBDA}
++ AS={5*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*40*LAMBDA}
++ AD={5*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*40*LAMBDA}
+M4 n1 b gnd gnd CMOSN W={40*LAMBDA} L={2*LAMBDA}
++ AS={5*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*40*LAMBDA}
++ AD={5*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*40*LAMBDA}
+
+.ends Nand2
+
+
+.subckt Nand3 a b c out vdd gnd
+.param k=2
+
+M1 out a vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M2 out b vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M3 out c vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M4 out a n1 gnd CMOSN W={60*LAMBDA} L={2*LAMBDA}
++ AS={5*60*LAMBDA*LAMBDA} PS={10*LAMBDA+2*60*LAMBDA}
++ AD={5*60*LAMBDA*LAMBDA} PD={10*LAMBDA+2*60*LAMBDA}
+M5 n1 b n2 gnd CMOSN W={60*LAMBDA} L={2*LAMBDA}
++ AS={5*60*LAMBDA*LAMBDA} PS={10*LAMBDA+2*60*LAMBDA}
++ AD={5*60*LAMBDA*LAMBDA} PD={10*LAMBDA+2*60*LAMBDA}
+M6 n2 c gnd gnd CMOSN W={60*LAMBDA} L={2*LAMBDA}
++ AS={5*60*LAMBDA*LAMBDA} PS={10*LAMBDA+2*60*LAMBDA}
++ AD={5*60*LAMBDA*LAMBDA} PD={10*LAMBDA+2*60*LAMBDA}
+
+.ends Nand3
+
+
+.subckt Nand4 a b c d out vdd gnd
+.param k=2
+
+M1 out a vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M2 out b vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M3 out c vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M4 out d vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M5 out a n1 gnd CMOSN W={80*LAMBDA} L={2*LAMBDA}
++ AS={5*80*LAMBDA*LAMBDA} PS={10*LAMBDA+2*80*LAMBDA}
++ AD={5*80*LAMBDA*LAMBDA} PD={10*LAMBDA+2*80*LAMBDA}
+M6 n1 b n2 gnd CMOSN W={80*LAMBDA} L={2*LAMBDA}
++ AS={5*80*LAMBDA*LAMBDA} PS={10*LAMBDA+2*80*LAMBDA}
++ AD={5*80*LAMBDA*LAMBDA} PD={10*LAMBDA+2*80*LAMBDA}
+M7 n2 c n3 gnd CMOSN W={80*LAMBDA} L={2*LAMBDA}
++ AS={5*80*LAMBDA*LAMBDA} PS={10*LAMBDA+2*80*LAMBDA}
++ AD={5*80*LAMBDA*LAMBDA} PD={10*LAMBDA+2*80*LAMBDA}
+M8 n3 d gnd gnd CMOSN W={80*LAMBDA} L={2*LAMBDA}
++ AS={5*80*LAMBDA*LAMBDA} PS={10*LAMBDA+2*80*LAMBDA}
++ AD={5*80*LAMBDA*LAMBDA} PD={10*LAMBDA+2*80*LAMBDA}
+
+.ends Nand4
+
+
+.subckt Nand5 a b c d e out vdd gnd
+.param k=2
+
+M1 out a vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M2 out b vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M3 out c vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M4 out d vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M5 out e vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M6 out a n1 gnd CMOSN W={100*LAMBDA} L={2*LAMBDA}
++ AS={5*100*LAMBDA*LAMBDA} PS={10*LAMBDA+2*100*LAMBDA}
++ AD={5*100*LAMBDA*LAMBDA} PD={10*LAMBDA+2*100*LAMBDA}
+M7 n1 b n2 gnd CMOSN W={100*LAMBDA} L={2*LAMBDA}
++ AS={5*100*LAMBDA*LAMBDA} PS={10*LAMBDA+2*100*LAMBDA}
++ AD={5*100*LAMBDA*LAMBDA} PD={10*LAMBDA+2*100*LAMBDA}
+M8 n2 c n3 gnd CMOSN W={100*LAMBDA} L={2*LAMBDA}
++ AS={5*100*LAMBDA*LAMBDA} PS={10*LAMBDA+2*100*LAMBDA}
++ AD={5*100*LAMBDA*LAMBDA} PD={10*LAMBDA+2*100*LAMBDA}
+M9 n3 d n4 gnd CMOSN W={100*LAMBDA} L={2*LAMBDA}
++ AS={5*100*LAMBDA*LAMBDA} PS={10*LAMBDA+2*100*LAMBDA}
++ AD={5*100*LAMBDA*LAMBDA} PD={10*LAMBDA+2*100*LAMBDA}
+M10 n4 e gnd gnd CMOSN W={100*LAMBDA} L={2*LAMBDA}
++ AS={5*100*LAMBDA*LAMBDA} PS={10*LAMBDA+2*100*LAMBDA}
++ AD={5*100*LAMBDA*LAMBDA} PD={10*LAMBDA+2*100*LAMBDA}
+
+.ends Nand5
+
+
+* XOR Subcircuit (using 4 NAND2 gates)
+.subckt xor2 a b out vdd gnd
+
+* XOR implementation: out = NAND(NAND(a,NAND(a,b)), NAND(b,NAND(a,b)))
+Xnand1 a b n1 vdd gnd Nand2
+Xnand2 a n1 n2 vdd gnd Nand2
+Xnand3 b n1 n3 vdd gnd Nand2
+Xnand4 n2 n3 out vdd gnd Nand2
+
+.ends xor2
+
+
+* CLA Propagate Generator (P0-P4)
+* P = A XOR B for each bit
+.subckt cla_propagate a0 a1 a2 a3 a4 b0 b1 b2 b3 b4 p0 p1 p2 p3 p4 vdd gnd
+
+Xxor_p0 a0 b0 p0 vdd gnd xor2
+Xxor_p1 a1 b1 p1 vdd gnd xor2
+Xxor_p2 a2 b2 p2 vdd gnd xor2
+Xxor_p3 a3 b3 p3 vdd gnd xor2
+Xxor_p4 a4 b4 p4 vdd gnd xor2
+
+.ends cla_propagate
+
+
+* CLA Generate Generator (G0-G4)
+* G = A AND B for each bit (using NAND + INV)
+.subckt cla_generate a0 a1 a2 a3 a4 b0 b1 b2 b3 b4 g0 g1 g2 g3 g4 vdd gnd g0_bar g1_bar g2_bar g3_bar g4_bar
+
+* G0 = A0 AND B0 = NOT(NAND(A0,B0))
+Xnand_g0 a0 b0 g0_bar vdd gnd Nand2
+Xinv_g0 g0_bar g0 vdd gnd inv
+
+* G1 = A1 AND B1 = NOT(NAND(A1,B1))
+Xnand_g1 a1 b1 g1_bar vdd gnd Nand2
+Xinv_g1 g1_bar g1 vdd gnd inv
+
+* G2 = A2 AND B2 = NOT(NAND(A2,B2))
+Xnand_g2 a2 b2 g2_bar vdd gnd Nand2
+Xinv_g2 g2_bar g2 vdd gnd inv
+
+* G3 = A3 AND B3 = NOT(NAND(A3,B3))
+Xnand_g3 a3 b3 g3_bar vdd gnd Nand2
+Xinv_g3 g3_bar g3 vdd gnd inv
+
+* G4 = A4 AND B4 = NOT(NAND(A4,B4))
+Xnand_g4 a4 b4 g4_bar vdd gnd Nand2
+Xinv_g4 g4_bar g4 vdd gnd inv
+
+.ends cla_generate
+
+.subckt cla_carry g0 g1 g2 g3 g4 g0_bar g1_bar g2_bar g3_bar g4_bar p0 p1 p2 p3 p4 c2 c3 c4 c5 vdd gnd
+
+* c1 = g0
+* Xinv_c1 g0_bar c1 vdd gnd inv
+
+* c2 = g1 + p1·g0 = NAND(g1_bar, NAND(p1,g0))
+XNandt2_1 p1 g0 t2_1 vdd gnd Nand2
+Xnandc2 g1_bar t2_1 c2 vdd gnd Nand2
+
+* c3 = g2 + p2·g1 + p2·p1·g0 = NAND(g2_bar, NAND(p2,g1), NAND(p2,p1,g0))
+XNandt3_1 p2 g1 t3_1 vdd gnd Nand2
+XNandt3_2 p2 p1 g0 t3_2 vdd gnd Nand3
+Xnandc3 g2_bar t3_1 t3_2 c3 vdd gnd Nand3
+
+* c4 = g3 + p3·g2 + p3·p2·g1 + p3·p2·p1·g0
+XNandt4_1 p3 g2 t4_1 vdd gnd Nand2
+XNandt4_2 p3 p2 g1 t4_2 vdd gnd Nand3
+XNandt4_3 p3 p2 p1 g0 t4_3 vdd gnd Nand4
+Xnandc4 g3_bar t4_1 t4_2 t4_3 c4 vdd gnd Nand4
+
+* c5 = g4 + p4·g3 + p4·p3·g2 + p4·p3·p2·g1 + p4·p3·p2·p1·g0
+XNandt5_1 p4 g3 t5_1 vdd gnd Nand2
+XNandt5_2 p4 p3 g2 t5_2 vdd gnd Nand3
+XNandt5_3 p4 p3 p2 g1 t5_3 vdd gnd Nand4
+XNandt5_4 p4 p3 p2 p1 g0 t5_4 vdd gnd Nand5
+Xnandc5 g4_bar t5_1 t5_2 t5_3 t5_4 c5 vdd gnd Nand5
+
+.ends cla_carry
+
+
+* CLA Sum Generator (S0-S4)
+* S = P XOR C for each bit
+.subckt cla_sum p0 p1 p2 p3 p4 c0 c1 c2 c3 c4 s0 s1 s2 s3 s4 vdd gnd
+
+Xxor_s0 p0 c0 s0 vdd gnd xor2
+Xxor_s1 p1 c1 s1 vdd gnd xor2
+Xxor_s2 p2 c2 s2 vdd gnd xor2
+Xxor_s3 p3 c3 s3 vdd gnd xor2
+Xxor_s4 p4 c4 s4 vdd gnd xor2
+
+.ends cla_sum
+
+
+* Testbench
+vdd vdd gnd 1.8
+
+* Input signals for A (5-bit) - All high (A = 11111)
+Va0 a0 gnd 1.8
+Va1 a1 gnd 1.8
+Va2 a2 gnd 1.8
+Va3 a3 gnd 1.8
+Va4 a4 gnd 1.8
+* Input signals for B (5-bit) - Only LSB (b0) is pulsing, rest are 0
+Vb0 b0 gnd PULSE(0 1.8 15n 0 0 15n 30n)
+Vb1 b1 gnd 0
+Vb2 b2 gnd 0
+Vb3 b3 gnd 0
+Vb4 b4 gnd 0
+
+* Instantiate CLA Propagate Generator
+Xcla_prop a0 a1 a2 a3 a4 b0 b1 b2 b3 b4 p0 p1 p2 p3 p4 vdd gnd cla_propagate
+
+* Instantiate CLA Generate Generator
+Xcla_gen a0 a1 a2 a3 a4 b0 b1 b2 b3 b4 g0 g1 g2 g3 g4 vdd gnd g0_bar g1_bar g2_bar g3_bar g4_bar cla_generate
+
+* Carry input
+Vcin cin gnd 0
+
+* Instantiate CLA Carry Logic (c1=g0, so only need c2-c5)
+Xcla_carry g0 g1 g2 g3 g4 g0_bar g1_bar g2_bar g3_bar g4_bar p0 p1 p2 p3 p4 c2 c3 c4 c5 vdd gnd cla_carry
+
+* Instantiate CLA Sum Generator (use cin for s0, g0 for s1, c2-c4 for s2-s4)
+Xcla_sum p0 p1 p2 p3 p4 cin g0 c2 c3 c4 s0 s1 s2 s3 s4 vdd gnd cla_sum
+
+.save v(a0) v(a1) v(a2) v(a3) v(a4) v(b0) v(b1) v(b2) v(b3) v(b4) v(p0) v(p1) v(p2) v(p3) v(p4) v(g0) v(g1) v(g2) v(g3) v(g4) v(c1) v(c2) v(c3) v(c4) v(c5) v(s0) v(s1) v(s2) v(s3) v(s4) v(cin)
+.tran 1p 80n
+
+.control
+run
+set curplottitle = "Akshay Chanda 2024102014 - 5-bit CLA Adder Max Sum delay"
+plot v(b0)+9 v(s0)+6 v(s1)+3 v(s2) v(s3)-3 v(s4)-6 v(c5)-9
+
+* Delay measurement from b0 rising edge to c5 (carry-out) rising edge
+meas tran delay_b0_c5 trig v(b0) val=0.9 rise=1 targ v(s5) val=0.9 fall=1
+
+* meas tran tmin_sum trig v(b0) val=0.9 rise=1 targ v(s0) val=0.9 rise=1
+* meas tran tmin_carry trig v(b0) val=0.9 rise=1 targ v(s0) val=0.9 fall=1
+* meas tran tmin_cARRY2 trig v(b0) val=0.9 rise=1 targ v(s1) val=0.9 rise=1
+
+
+
+.endc
+.end
+
+* delay_b0_c5         =  6.167318e-10 
+* targ=  6.417318e-10 trig=  2.500000e-11
+
+* tmin_sum            =  2.223466e-10 
+* targ=  1.522285e-08 trig=  1.500050e-08
+
+* tmin_carry          =  3.179568e-10 
+* targ=  1.536796e-08 trig=  1.505000e-08
+* tmin_carry2         =  3.356372e-10 
+* targ=  1.538564e-08 trig=  1.505000e-08

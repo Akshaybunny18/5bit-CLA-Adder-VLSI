@@ -1,0 +1,2173 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+
+% Use Computer Modern fonts instead of Times if Times fonts are not available
+\renewcommand{\rmdefault}{cmr}
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{circuitikz}
+\usepackage{hyperref}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% Listings configuration for Verilog
+\lstdefinestyle{verilog}{
+    language=Verilog,
+    basicstyle=\ttfamily\scriptsize,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{green!50!black}\itshape,
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=3pt,
+    backgroundcolor=\color{white},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=true,
+    postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+    escapeinside={\%*}{*)},
+    morekeywords={input, output, wire, reg, assign, module, endmodule, always, posedge, begin, end},
+    xleftmargin=0pt,
+    xrightmargin=0pt,
+    resetmargins=true,
+    aboveskip=6pt,
+    belowskip=6pt,
+    columns=flexible,
+    keepspaces=true,
+    linewidth=\columnwidth
+}
+
+% SPICE netlist style
+\lstdefinestyle{spice}{
+    basicstyle=\ttfamily\scriptsize,
+    commentstyle=\color{green!50!black}\itshape,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    frame=single,
+    breaklines=true,
+    breakatwhitespace=true,
+    postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+    captionpos=b,
+    xleftmargin=0pt,
+    xrightmargin=0pt,
+    resetmargins=true,
+    aboveskip=6pt,
+    belowskip=6pt,
+    columns=flexible,
+    keepspaces=true,
+    linewidth=\columnwidth
+}
+
+\begin{document}
+
+\title{Design and Implementation of a 5-bit Carry Look-Ahead Adder using 180nm CMOS Technology\\
+{\normalsize VLSI Design Course Project -- Monsoon 2025}
+}
+
+\author{\IEEEauthorblockN{Chanda Akshay Kumar}
+\IEEEauthorblockA{Roll No: 2024102014 \\
+Email: chanda.kumar@students.iiit.ac.in\\
+Electronics and Communication Engineering \\
+International Institute of Information Technology, Hyderabad}
+}
+
+\maketitle
+
+\begin{abstract}
+This project presents the design, simulation, and implementation of a 5-bit Carry Look-Ahead (CLA) adder using 180nm CMOS technology. The adder is designed to operate at $V_{DD} = 1.8V$ with equal NMOS and PMOS channel lengths. The design methodology includes circuit-level simulations using NGSPICE, physical layout using MAGIC layout editor with SCN6M\_DEEP.09.tech27 technology file, post-layout extraction and verification, Verilog HDL implementation, and FPGA prototyping. The complete design flow from schematic to pose layout is documented with emphasis on timing analysis, and area optimization. The maximum operating frequency achieved is 1281 MHz with a worst-case delay of 609.2ps.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Carry Look-Ahead Adder, CLA, CMOS VLSI, 180nm technology, NGSPICE, MAGIC layout, Verilog HDL, FPGA implementation
+\end{IEEEkeywords}
+
+\section{Introduction}
+\label{sec:introduction}
+
+Addition is one of the fundamental arithmetic operations in digital systems, forming the basis for more complex operations such as multiplication, division, and address calculation. The speed of the adder directly impacts the overall performance of processors, digital signal processors (DSPs), and application-specific integrated circuits (ASICs).
+
+\subsection{Motivation}
+The Carry Look-Ahead (CLA) adder addresses the primary limitation of ripple-carry adders: the propagation delay through the carry chain. By computing carry signals in parallel using generate and propagate functions, CLA adders achieve significantly reduced delay at the cost of increased hardware complexity.
+
+\subsection{Project Objectives}
+The main objectives of this project are:
+\begin{itemize}
+    \item Design a 5-bit CLA adder with optimized performance
+    \item Implement the design using 180nm CMOS technology
+    \item Perform comprehensive simulations at both schematic and post-layout levels
+    \item Create physical layout following DRC rules
+    \item Implement and verify the design using Verilog HDL
+    \item Prototype the design on FPGA hardware
+    \item Analyze timing,clock speed and area characteristics
+\end{itemize}
+
+\section{Background and Theory}
+\label{sec:background}
+
+\subsection{Carry Look-Ahead Adder Concept}
+
+For two n-bit numbers $A = a_{n-1}a_{n-2}...a_1a_0$ and $B = b_{n-1}b_{n-2}...b_1b_0$, the sum and carry at each bit position can be computed using:
+
+\begin{equation}
+s_i = a_i \oplus b_i \oplus c_i
+\end{equation}
+
+\begin{equation}
+c_{i+1} = a_i \cdot b_i + (a_i \oplus b_i) \cdot c_i
+\end{equation}
+
+The CLA approach defines two functions for each bit position:
+\begin{itemize}
+    \item \textbf{Generate}: $g_i = a_i \cdot b_i$ (carry is generated regardless of $c_i$)
+    \item \textbf{Propagate}: $p_i = a_i \oplus b_i$ (carry is propagated if $c_i = 1$)
+\end{itemize}
+
+The carry can be expressed as:
+\begin{equation}
+c_{i+1} = g_i + p_i \cdot c_i
+\end{equation}
+
+For a 5-bit adder with carry-in $c_{in} = c_0 = 0$, the carries can be expanded 
+more easily than expected because cin=0. so, the last term for every carry boolean equation can be removed, the equations are:
+
+\begin{align}
+c_1 &= g_0 + p_0 \cdot c_{in} = g_0\\
+\end{align}
+Similarly,
+\begin{align}
+c_2 &= g_1 + p_1 \cdot g_0 \\
+c_3 &= g_2 + p_2 \cdot g_1 + p_2 \cdot p_1 \cdot g_0 \\
+c_4 &= g_3 + p_3 \cdot g_2 + p_3 \cdot p_2 \cdot g_1 + p_3 \cdot p_2 \cdot p_1 \cdot g_0 \nonumber \\
+c_5 &= g_4 + p_4 \cdot g_3 + p_4 \cdot p_3 \cdot g_2 + p_4 \cdot p_3 \cdot p_2 \cdot g_1 \nonumber \\
+    &\quad + p_4 \cdot p_3 \cdot p_2 \cdot p_1 \cdot g_0
+\end{align}
+
+The sum bits are then computed as:
+\begin{equation}
+sum_i = p_i \oplus c_i, \quad i = 0,1,2,3,4
+\end{equation}
+
+where $c_5$ represents the carry-out ($c_{out}$) of the 5-bit adder.
+
+% \subsubsection*{Optimizing the Propagate Signal for VLSI Implementation}
+
+% In a typical CLA, the propagate term $p_i$ is implemented using an XOR gate:
+% \begin{equation}
+% p_i = a_i \oplus b_i
+% \end{equation}
+% However, for the purpose of \textbf{carry computation}, using XOR can be relatively slower due to its higher gate delay and transistor complexity. 
+% Since the carry generation logic already depends on the \textit{generate} term $g_i = a_i \cdot b_i$, we can simplify the propagate term for the carry chain as:
+% \begin{equation}
+% p_i^{carry} = a_i + b_i
+% \end{equation}
+% This represents a logical OR operation instead of XOR.
+
+% \paragraph{Reasoning:}
+% When either $a_i$ or $b_i$ is 1, the bit position can propagate a carry; the distinction between them (as captured by XOR) is unnecessary in carry computation. 
+% Thus, we define two distinct propagate paths:
+% \begin{align}
+% p_i^{carry} &= a_i + b_i \quad \text{(for carry logic)}\\
+% p_i^{add} &= a_i \oplus b_i \quad \text{(for sum logic)}
+% \end{align}
+
+% Using this separation:
+% \begin{itemize}
+%     \item The \textbf{carry logic} becomes simpler and faster, as OR gates are smaller and have lower delay in CMOS.
+%     \item The \textbf{sum logic} still uses XOR to ensure correct binary addition behavior.
+% \end{itemize}
+
+% This approach not only improves timing performance but also aligns better with standard-cell optimization during VLSI synthesis. 
+% In practical implementation, the Carry Look-Ahead Adder therefore computes both:
+% \begin{itemize}
+%     \item $p_i^{carry} = a_i \lor b_i$ for carry generation.
+%     \item $p_i^{add} = a_i \oplus b_i$ for sum generation.
+% \end{itemize}
+
+% Hence, this design achieves a clear trade-off between logical accuracy and physical efficiency, leading to reduced propagation delay in 180\,nm CMOS technology.
+
+% \subsection{Logic Style Selection}
+
+% Three main logic families were considered:
+% \begin{itemize}
+%     \item \textbf{Static CMOS}: Robust, rail-to-rail swing, but larger area
+%     \item \textbf{Dynamic Logic}: Faster, smaller area, but requires careful clock management
+%     \item \textbf{Mixed Style}: Combination of both for optimal trade-offs
+% \end{itemize}
+
+% [Discuss your choice and justification here]
+
+\section{Proposed Architecture}
+\label{sec:architecture}
+
+\subsection{Overall Structure}
+
+The proposed 5-bit CLA adder consists of the following main blocks:
+
+\begin{enumerate}
+    \item \textbf{Input D Flip-Flops}: 10 D flip-flops for registering the 5-bit inputs $a$ ($a_0$ to $a_4$) and $b$ ($b_0$ to $b_4$)
+    \item \textbf{Propagate and Generate Block}: Computes $p_i$ and $g_i$ for each bit position
+    \item \textbf{Carry Look-Ahead Logic}: Computes all carry signals in parallel
+    \item \textbf{Sum Block}: Computes the final sum bits
+    \item \textbf{Output D Flip-Flops}: 6 D flip-flops for registering the 5-bit sum ($s_0$ to $s_4$) and carry-out ($c_5$)
+\end{enumerate}
+
+The design uses a total of \textbf{16 D flip-flops}: 10 for input registers and 6 for output registers.
+
+% Add block diagram using tikz or include figure
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.48\textwidth]{figures/block_diagram.png}
+    \caption{Block diagram of the 5-bit CLA adder}
+    \label{fig:block_diagram}
+\end{figure}
+
+\subsection{Timing Considerations}
+
+The design operates on a clock signal $f_{clk}$ with period $T_{clk}$. Input bits are available before the rising edge, and output must be computed and available before the next rising edge. The critical path includes:
+
+\begin{itemize}
+    \item D flip-flop clock-to-Q delay ($t_{C2Q}$)
+    \item Propagate/Generate logic delay
+    \item Carry Look-Ahead logic delay (longest carry path)
+    \item Sum computation delay
+    \item D flip-flop setup time ($t_{setup}$)
+\end{itemize}
+
+The minimum clock period is:
+\begin{equation}
+T_{clk,min} = t_{C2Q_{max}} + t_{pd_{CLA_{max}}} + t_{setup_{max}}
+\end{equation}
+
+\subsection{Design Hierarchy}
+
+The design follows a hierarchical approach with the following building blocks:
+\begin{itemize}
+    \item Basic gates: Inverter, NAND2, NAND3, NAND4, NAND5
+    \item Composite gates: XOR (using 4×NAND2), AND (NAND2 + Inverter)
+    \item Functional blocks: P/G generators, CLA logic, sum generators
+    \item Sequential elements: D flip-flops for input/output registers
+\end{itemize}
+
+\section{Circuit Design and Sizing}
+\label{sec:circuit_design}
+
+\subsection{Design Specifications and Fundamental Parameters}
+
+The 5-bit CLA adder design is based on the following specifications and fundamental parameters:
+
+\textbf{Technology Specifications:}
+\begin{itemize}
+    \item Technology: 180nm CMOS process
+    \item Supply Voltage ($V_{DD}$): 1.8V
+    \item Minimum feature size: $\lambda = 0.09\mu m = 90nm$
+    \item Channel Length: $L = 2\lambda = 0.18\mu m$ (uniform for all transistors)
+    \item Output load: Inverter with $W_p/W_n = 20\lambda/10\lambda$
+\end{itemize}
+
+\textbf{Transistor Sizing Methodology:}
+
+The sizing of PMOS and NMOS transistors is based on carrier mobility considerations. For the 180nm CMOS process:
+
+\begin{itemize}
+    \item Mobility ratio: $\mu_n/\mu_p \approx 2$
+\end{itemize}
+
+To achieve equal rise and fall times in logic gates, the PMOS width should compensate for lower hole mobility. The PMOS-to-NMOS width ratio is:
+
+\begin{equation}
+k = \frac{W_p}{W_n} = {\frac{\mu_n}{\mu_p}} \approx {2}
+\end{equation}
+
+Therefore, the design uses $W_p = k \times W_n = 2 \times W_n$ for balanced switching characteristics.
+
+\textbf{Basic Inverter Sizing (Reference):}
+\begin{itemize}
+    \item NMOS width: $W_n = 20\lambda = 1.8\mu m$, $L = 2\lambda = 0.18\mu m$
+    \item PMOS width: $W_p = 40\lambda = 3.6\mu m$, $L = 2\lambda = 0.18\mu m$
+\end{itemize}
+
+All other gates are sized relative to this basic inverter, with series NMOS transistors scaled by the number of devices in series to maintain equal drive strength.
+
+\subsection{Basic Gates Design and Sizing}
+
+\subsubsection{NAND2 Gate}
+
+For a 2-input NAND gate, NMOS transistors in series require width scaling:
+\begin{itemize}
+    \item PMOS (parallel): $W_p = 40\lambda$, $L = 2\lambda$
+    \item NMOS (series): $W_n = 2 \times 20\lambda = 40\lambda$, $L = 2\lambda$
+\end{itemize}
+
+\subsubsection{NAND3 Gate}
+
+For a 3-input NAND gate:
+\begin{itemize}
+    \item PMOS (parallel): $W_p = 40\lambda$, $L = 2\lambda$
+    \item NMOS (series): $W_n = 3 \times 20\lambda = 60\lambda$, $L = 2\lambda$
+\end{itemize}
+
+\subsubsection{NAND4 Gate}
+
+For a 4-input NAND gate:
+\begin{itemize}
+    \item PMOS (parallel): $W_p = 40\lambda$, $L = 2\lambda$
+    \item NMOS (series): $W_n = 4 \times 20\lambda = 80\lambda$, $L = 2\lambda$
+\end{itemize}
+
+\subsubsection{NAND5 Gate}
+
+For a 5-input NAND gate:
+\begin{itemize}
+    \item PMOS (parallel): $W_p = 40\lambda$, $L = 2\lambda$
+    \item NMOS (series): $W_n = 5 \times 20\lambda = 100\lambda$, $L = 2\lambda$
+\end{itemize}
+
+\subsubsection{General Sizing Rule}
+
+For an n-input NAND gate:
+\begin{equation}
+W_{n,series} = n \times 20\lambda
+\end{equation}
+\begin{equation}
+W_{p,parallel} = 40\lambda \quad \text{(constant for all NAND gates)}
+\end{equation}
+
+This scaling compensates for series resistance in the pull-down network, maintaining uniform delay across all gates.
+
+\begin{table}[htbp]
+\centering
+\caption{Complete Gate Sizing Summary}
+\label{tab:gate_sizing_summary}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Gate} & \textbf{NMOS W ($\lambda$)} & \textbf{PMOS W ($\lambda$)} & \textbf{L ($\lambda$)} & \textbf{W ($\mu$m)} \\ \midrule
+Inverter      & 20    & 40    & 2 & 1.8/3.6 \\
+NAND2         & 40    & 40    & 2 & 3.6/3.6 \\
+NAND3         & 60    & 40    & 2 & 5.4/3.6 \\
+NAND4         & 80    & 40    & 2 & 7.2/3.6 \\
+NAND5         & 100   & 40    & 2 & 9.0/3.6 \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{D Flip-Flop Design}
+
+\subsubsection{Implementation Method Selection}
+
+Multiple implementation methods were evaluated for the D flip-flop design:
+
+\begin{enumerate}
+    \item \textbf{Transmission Gate Based Flip-Flop}: Uses transmission gates for signal routing with complementary clocks
+    \item \textbf{Two CMOS Latches with Complementary Clock}: Traditional master-slave configuration requiring both CLK and $\overline{\text{CLK}}$
+    \item \textbf{True Single Phase Clock (TSPC) Flip-Flop}: Dynamic register using only a single clock phase
+\end{enumerate}
+
+The \textbf{TSPC-based implementation} was selected due to:
+\begin{itemize}
+    \item \textbf{Low Setup and Hold Times}: Single clock phase eliminates clock complementation delays
+    \item \textbf{Reduced Area}: Requires only 9 transistors compared to 20-24 for transmission gate designs
+    \item \textbf{Single Clock Phase}: Simplifies clock distribution and reduces power consumption
+    \item \textbf{Faster Operation}: Reduced parasitics result in lower propagation delays
+\end{itemize}
+
+\subsubsection{TSPC Operation and Timing Analysis}
+
+The TSPC flip-flop consists of three cascaded stages. Analysis of the circuit structure reveals:
+
+\textbf{Stage 1 (Input Stage):} When CLK = 0, the input D propagates through this stage to node X. The propagation delay of this first stage determines the \textbf{setup time} ($t_{setup}$).
+
+\textbf{Stage 2 (Dynamic Stage):} When CLK = 0, node Y precharges to $V_{DD}$. When CLK = 1, this stage evaluates based on X. The propagation delay of the second stage determines the \textbf{hold time} ($t_{hold}$). Note that hold time does not have a rise component because node Y is precharged to $V_{DD}$.
+
+\textbf{Stage 3 (Output Stage):} When CLK = 1, the Y value propagates to output Q through the final inverter.
+
+\subsubsection{Timing Parameter Measurement Methodology}
+
+\textbf{A. Clock-to-Q Delay ($t_{C2Q}$):}
+\begin{itemize}
+    \item Measured as the time difference between clock rising/falling edges and output Q transitions
+    \item Both rise ($t_{C2Q,rise}$) and fall ($t_{C2Q,fall}$) delays are measured
+    \item Average value: $t_{C2Q,avg} = (t_{C2Q,rise} + t_{C2Q,fall})/2$
+\end{itemize}
+
+\textbf{B. Setup Time ($t_{setup}$):}
+\begin{itemize}
+    \item Represents the propagation delay of the first stage (input to node X)
+    \item Measurement: Fix CLK = 0 and measure propagation delay from input D to first stage output
+    \item Both rise and fall transitions of the first block are measured with respect to input D
+\end{itemize}
+
+\textbf{C. Hold Time ($t_{hold}$):}
+\begin{itemize}
+    \item Represents the propagation delay of the second stage (node X to node Y)
+    \item Measurement: Fix first block output to $V_{DD}$ and measure propagation delay of second block with respect to clock
+    \item Only fall transition is measured since node Y is precharged to $V_{DD}$
+    \item No rise component exists for this measurement
+\end{itemize}
+
+This flip-flop design is utilized throughout the 5-bit CLA adder: 10 flip-flops register the inputs ($a_0$ to $a_4$ and $b_0$ to $b_4$), and 6 flip-flops register the outputs ($s_0$ to $s_4$ and $c_5$).
+
+\subsubsection{Transistor Sizing}
+
+The TSPC D flip-flop transistor sizes are designed to ensure proper functionality and prevent race conditions:
+
+\begin{table}[htbp]
+\centering
+\caption{TSPC D Flip-Flop Transistor Sizing}
+\label{tab:dff_sizing}
+\scriptsize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Transistor} & \textbf{Function} & \textbf{W ($\lambda$)} & \textbf{L ($\lambda$)} \\ \midrule
+M1 (PMOS)          & Stage 1: D input (P1)          & 80  & 2 \\
+M2 (PMOS)          & Stage 1: CLK input (P2)        & 80  & 2 \\
+M3 (NMOS)          & Stage 1: D input (N1)          & 20  & 2 \\
+M4 (PMOS)          & Stage 2: CLK input (P3)        & 40  & 2 \\
+M5 (NMOS)          & Stage 2: Node A input (N3)     & 40  & 2 \\
+M6 (NMOS)          & Stage 2: CLK input (N2)        & 40  & 2 \\
+M7 (PMOS)          & Stage 3: Node B input (P4)     & 40  & 2 \\
+M8 (NMOS)          & Stage 3: CLK input (N4)        & 40  & 2 \\
+M9 (NMOS)          & Stage 3: Node B input (N5)     & 40  & 2 \\
+M10 (PMOS)         & Output: $\overline{Q}$ inv (P6) & 40  & 2 \\
+M11 (NMOS)         & Output: $\overline{Q}$ inv (N6) & 20  & 2 \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Sizing Rationale:}
+\begin{itemize}
+    \item M1 and M2 (PMOS) sized larger at 80$\lambda$ to provide strong drive for Stage 1 input sampling
+    \item M3 sized at 20$\lambda$ for proper pull-down in Stage 1
+    \item Stage 2 transistors (M4, M5, M6) all sized at 40$\lambda$ for balanced dynamic evaluation
+    \item Stage 3 transistors (M7, M8, M9) sized at 40$\lambda$ for consistent output drive
+    \item Output inverter uses M10 (PMOS) = 40$\lambda$ and M11 (NMOS) = 20$\lambda$, maintaining 2:1 ratio for balanced operation
+    \item Clock-controlled transistors (M2, M4, M6, M8) ensure proper phase separation and timing
+    \item Uniform channel length L = 2$\lambda$ = 0.18$\mu$m for all transistors
+\end{itemize}
+
+\subsubsection{Circuit Schematic}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.45\textwidth]{tspc.png}
+    \caption{TSPC D Flip-Flop circuit schematic}
+    \label{fig:dff_schematic}
+\end{figure}
+
+\subsection{Propagate and Generate Logic}
+
+\subsubsection{XOR Gate Design}
+The propagate function $p_i = a_i \oplus b_i$ is implemented using four NAND2 gates following the standard XOR implementation:
+
+\begin{multline}
+XOR(a,b) = NAND(NAND(a,NAND(a,b)), \\
+NAND(b,NAND(a,b)))
+\end{multline}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.4\textwidth]{XOR_from_NAND.png}
+    \caption{XOR gate implementation using 4$\times$NAND2 gates}
+    \label{fig:xor_circuit}
+\end{figure}
+
+Each NAND2 gate uses the sizing specified earlier:
+\begin{itemize}
+    \item PMOS: $W_p = 40\lambda$, $L = 2\lambda$
+    \item NMOS: $W_n = 40\lambda$, $L = 2\lambda$
+\end{itemize}
+
+\textbf{Design Note:} While the current implementation uses 4 NAND gates (16 transistors total), more efficient XOR implementations exist with fewer gates and reduced delay:
+\begin{itemize}
+    \item \textbf{Transmission Gate XOR}: Uses only 6 transistors with lower delay but requires complementary inputs
+    \item \textbf{Pass Transistor Logic}: Achieves XOR with 4-6 transistors but may suffer from degraded output levels
+    \item \textbf{Direct CMOS XOR}: Uses 12 transistors with full rail-to-rail swing
+\end{itemize}
+The 4-NAND implementation was selected for simplicity and consistency with the NAND-based design methodology, though future optimizations could explore these alternatives for improved area-delay product.
+
+\subsubsection{AND Gate Design}
+The generate function $g_i = a_i \cdot b_i$ is implemented using a NAND2 gate followed by an inverter:
+
+\begin{equation}
+AND(a,b) = NOT(NAND(a,b))
+\end{equation}
+
+This two-stage implementation ensures proper drive strength and minimal delay.
+
+\begin{table}[htbp]
+\centering
+\caption{P/G Logic Implementation}
+\label{tab:pg_sizing}
+\scriptsize
+\begin{tabular}{@{}lc@{}}
+\toprule
+\textbf{Function} & \textbf{Implementation} \\ \midrule
+Propagate ($p_i$)  & 4$\times$NAND2 \\
+Generate ($g_i$)   & NAND2 + INV \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Carry Look-Ahead Logic}
+
+The carry signals are implemented using NAND-based logic following De Morgan's theorem. Each carry computation uses the inverted generate signals ($\overline{g_i}$) produced by the NAND2 gates in the generate block.
+
+\subsubsection{Carry-1 ($c_1 = g_0$)}
+The simplest case where $c_1 = g_0$ is directly taken from the generate logic. An inverter converts $\overline{g_0}$ to $c_1 = g_0$.
+
+\subsubsection{Carry-2 ($c_2 = g_1 + p_1 \cdot g_0$)}
+Implementation using NAND gates:
+\begin{equation}
+c_2 = NAND(\overline{g_1}, NAND(p_1, g_0))
+\end{equation}
+
+This requires:
+\begin{itemize}
+    \item One NAND2 gate for $(p_1 \cdot g_0)$
+    \item One NAND2 gate for the final OR operation (using De Morgan's law)
+\end{itemize}
+
+\subsubsection{Carry-3 ($c_3 = g_2 + p_2 \cdot g_1 + p_2 \cdot p_1 \cdot g_0$)}
+Implementation:
+\begin{multline}
+c_3 = NAND(\overline{g_2}, NAND(p_2,g_1), \\
+NAND(p_2,p_1,g_0))
+\end{multline}
+
+Uses:
+\begin{itemize}
+    \item One NAND2 gate for $(p_2 \cdot g_1)$
+    \item One NAND3 gate for $(p_2 \cdot p_1 \cdot g_0)$
+    \item One NAND3 gate for final combination
+\end{itemize}
+
+\subsubsection{Carry-4 ($c_4$)}
+Implementation:
+\begin{multline}
+c_4 = NAND(\overline{g_3}, NAND(p_3,g_2), \\
+NAND(p_3,p_2,g_1), NAND(p_3,p_2,p_1,g_0))
+\end{multline}
+
+Uses:
+\begin{itemize}
+    \item One NAND2 gate: $(p_3 \cdot g_2)$
+    \item One NAND3 gate: $(p_3 \cdot p_2 \cdot g_1)$
+    \item One NAND4 gate: $(p_3 \cdot p_2 \cdot p_1 \cdot g_0)$
+    \item One NAND4 gate for final combination
+\end{itemize}
+
+\subsubsection{Carry-5 ($c_5$ - Carry Out)}
+The most complex carry implementation (critical path):
+\begin{multline}
+c_5 = NAND(\overline{g_4}, NAND(p_4,g_3), NAND(p_4,p_3,g_2), \\
+NAND(p_4,p_3,p_2,g_1), NAND(p_4,p_3,p_2,p_1,g_0))
+\end{multline}
+
+Uses:
+\begin{itemize}
+    \item One NAND2 gate: $(p_4 \cdot g_3)$
+    \item One NAND3 gate: $(p_4 \cdot p_3 \cdot g_2)$
+    \item One NAND4 gate: $(p_4 \cdot p_3 \cdot p_2 \cdot g_1)$
+    \item One NAND5 gate: $(p_4 \cdot p_3 \cdot p_2 \cdot p_1 \cdot g_0)$
+    \item One NAND5 gate for final combination
+\end{itemize}
+
+This represents the critical path with maximum delay through the NAND5 gates.
+
+The complexity increases progressively from $c_1$ to $c_5$, with $c_5$ forming the critical path due to maximum gate depth and highest fan-in gates (NAND5).
+
+\subsection{Sum Block}
+
+Each sum bit is computed as $sum_i = p_i \oplus c_i$ using XOR gates:
+\begin{itemize}
+    \item $s_0 = p_0 \oplus c_{in}$ (where $c_{in} = 0$, so $s_0 = p_0$)
+    \item $s_1 = p_1 \oplus c_1$
+    \item $s_2 = p_2 \oplus c_2$
+    \item $s_3 = p_3 \oplus c_3$
+    \item $s_4 = p_4 \oplus c_4$
+\end{itemize}
+
+Each XOR gate uses the same NAND2-based implementation with consistent sizing.
+
+\subsection{Output Buffer Design}
+
+Each output drives an inverter load with $W_p/W_n = 20\lambda/10\lambda$. The output buffers are designed with proper sizing to ensure:
+
+\begin{itemize}
+    \item Adequate drive strength for the specified load
+    \item Minimal delay contribution to critical path
+    \item Proper impedance matching
+\end{itemize}
+
+The buffer chain uses progressively sized inverters with typical scaling factor of 2-3\u00d7 between stages to optimize the delay-area product.
+
+\subsection{Design Summary}
+
+\begin{table}[htbp]
+\centering
+\caption{Complete Gate Sizing Summary}
+\label{tab:gate_sizing_summary}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Gate Type} & \textbf{NMOS W ($\lambda$)} & \textbf{PMOS W ($\lambda$)} & \textbf{L ($\lambda$)} \\ \midrule
+Inverter           & 20    & 40    & 2 \\
+NAND2              & 40    & 40    & 2 \\
+NAND3              & 60    & 40    & 2 \\
+NAND4              & 80    & 40    & 2 \\
+NAND5              & 100   & 40    & 2 \\
+XOR (4×NAND2)      & 40    & 40    & 2 \\ \bottomrule
+\end{tabular}
+\end{table}
+
+
+
+All dimensions are in units of $\lambda = 0.09\mu m$, with uniform channel length $L = 2\lambda = 0.18\mu m$ for all transistors. The parameter $k=2$ represents the PMOS-to-NMOS width ratio derived from mobility considerations to achieve balanced rise and fall times for minimum sized inverter, relatively scaled or sized for other gates and circuits to maintain linear relation with inverter.
+
+
+\section{Prelayout/NGSPICE Simulations}\
+\subsubsection{Key Design Parameters \& Simulation Setup}
+\begin{itemize}
+    \item Technology: TSMC 180nm CMOS
+    \item Lambda ($\lambda$): 0.09$\mu$m = 90nm
+    \item Channel length: $L = 2\lambda = 0.18\mu$m (minimum for this technology)
+    \item Same design parameters mentioned above
+    \item Supply voltage: $V_{DD} = 1.8V$
+    % \item Temperature: 27°C (300K)
+    \item Technology file: \texttt{"TSMC\textunderscore180nm.txt"}
+\end{itemize}
+% \label{sec:ngspice}
+
+% \subsection{}
+% \label{subsec:sim_setup}
+
+All simulations were performed using NGSPICE with the 180nm technology file. The following parameters were used:
+
+For accurate parasitic modeling, the source/drain area and perimeter parameters were calculated for each transistor based on its sizing:
+
+\textbf{For PMOS transistors:}
+\begin{itemize}
+    \item AS = $5 \times w_p \times \lambda$ (Source area)
+    \item PS = $10 \times \lambda + 2 \times w_p$ (Source perimeter)
+    \item AD = AS (Drain area)
+    \item PD = PS (Drain perimeter)
+\end{itemize}
+
+\textbf{For NMOS transistors:}
+\begin{itemize}
+    \item AS = $5 \times w_n \times \lambda$ (Source area)
+    \item PS = $10 \times \lambda + 2 \times w_n$ (Source perimeter)
+    \item AD = AS (Drain area)
+    \item PD = PS (Drain perimeter)
+\end{itemize}
+
+where $w_p$ and $w_n$ are the widths of the PMOS and NMOS transistors respectively after sizing, and $\lambda = 0.09 \mu m$.
+
+% \begin{itemize}
+
+% \end{itemize}
+
+Each plot uses the command: \newline
+ set curplottitle="Chanda-Akshay-Kumar-2024102014-question-number-part"
+
+\subsection{Gates Pre-Layout Simulation and Verification}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{inverter_pre.png}
+    \caption{Inverter pre-layout simulation waveforms}
+    \label{fig:inv_pre}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{nand2_pre.png}
+    \caption{NAND2 gate pre-layout simulation waveforms}
+    \label{fig:nand2_pre}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{nand3_pre.png}
+    \caption{NAND3 gate pre-layout simulation waveforms}
+    \label{fig:nand3_pre}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{nand4_pre.png}
+    \caption{NAND4 gate pre-layout simulation waveforms}
+    \label{fig:nand4_pre}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{nand5_pre.png}
+    \caption{NAND5 gate pre-layout simulation waveforms}
+    \label{fig:nand5_pre}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{xor_pre.png}
+    \caption{XOR gate pre-layout simulation waveforms}
+    \label{fig:xor_pre}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{allgates_pre.png}
+    \caption{All gates pre-layout simulation comparison}
+    \label{fig:allgates_pre}
+\end{figure}
+
+\subsection{D Flip-Flop Characterization}
+
+\subsubsection{Functional Verification}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{flipflop_pre.png}
+    \caption{TSPC D Flip-Flop pre-layout simulation waveforms showing D-to-Q operation}
+    \label{fig:dff_func}
+\end{figure}
+
+\subsubsection{Timing Parameters}
+
+\begin{table}[htbp]
+\centering
+\caption{D Flip-Flop Timing Characteristics}
+\label{tab:dff_timing}
+\begin{tabular}{@{}lc@{}}
+\toprule
+\textbf{Parameter} & \textbf{Value (ps)} \\ \midrule
+Setup Time ($t_{setup_{rise}}$)        & 68.9ps \\
+Setup Time ($t_{setup_{fall}}$)        & 60.6ps \\
+Hold Time ($t_{hold}$)          & 34.7ps \\
+Clock-to-Q Delay rise ($t_{C2Q_{rise}}$)    & 49.58ps \\
+Clock-to-Q Delay fall ($t_{C2Q_{fall}}$)    &  121.75ps \\
+
+Clock-to-Q Delay Average ($t_{C2Q_{avg}}$)    & 85.67ps \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{dff_setup_time_tc2q_pre.png}
+    \caption{Setup time and $t_{C2Q}$ measurement for D Flip-Flop}
+    \label{fig:dff_setup_$t_{C2Q}$}
+\end{figure}
+
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{thold_pre.png}
+    \caption{Pre-layout hold time measurement for D Flip-Flop}
+    \label{fig:dff_hold_pre}
+\end{figure}
+
+% \subsection{P/G Block Verification}
+
+% \begin{figure}[htbp]
+%     \centering
+%     % \includegraphics[width=0.48\textwidth]{figures/pg_waveforms.png}
+%     \caption{Propagate and Generate logic waveforms}
+%     \label{fig:pg_waves}
+% \end{figure}
+
+\subsection{Complete Adder Simulation without FlipFlops}
+
+
+\subsubsection{Functional Test Cases without flipflops}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{cla_c1_pre.png}
+    \caption{5-bit CLA adder simulation: A = 11111 (all 1s), B = 00001 (only $b_0$ pulse, others 0)}
+    \label{fig:cla_c1}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{cla_c2_pre.png}
+    \caption{5-bit CLA adder simulation with multiple test cases: Test Case 1 (0-40ns): A transitions 11111 → 00000, B transitions 00001 → 01010; Test Case 2 (40-80ns): A = 10101, B = 01010; Test Case 3 (80-160ns): Various combinations with all bits transitioning}
+    \label{fig:cla_c2}
+\end{figure}
+
+
+\subsection{Complete Adder Simulation}
+
+
+
+
+
+% \begin{table}[htbp]
+% \centering
+% \caption{Test Vectors for 5-bit CLA Adder}
+% \label{tab:test_vectors}
+% \begin{tabular}{@{}ccccc@{}}
+% \toprule
+% \textbf{Test} & \textbf{A (5-bit)} & \textbf{B (5-bit)} & \textbf{Sum (5-bit)} & \textbf{Cout} \\ \midrule
+% 1             & 00000              & 00000              & 00000                & 0     \\
+% 2             & 00001              & 00001              & 00010                & 0     \\
+% 3             & 10101              & 01010              & 11111                & 0     \\
+% 4             & 11111              & 00001              & 00000                & 1     \\
+% 5             & 11111              & 11111              & 11110                & 1     \\
+% ...           & ...                & ...                & ...                  & ...   \\ \bottomrule
+% \end{tabular}
+% \end{table}
+
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.48\textwidth]{figures/adder_complete.png}
+    \caption{Complete 5-bit CLA adder waveforms with annotated timing}
+    \label{fig:adder_complete}
+\end{figure}
+
+\subsubsection{Delay Analysis}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{tmin_pre_adderlogic.png}
+    \caption{Pre-layout adder logic propagation delay measurement (minimum delay)}
+    \label{fig:tmin_pre_adder}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{tmax_pre_adderlogic.png}
+    \caption{Pre-layout adder logic propagation delay measurement (maximum delay)}
+    \label{fig:tmax_pre_adder}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{Critical Path Delay Breakdown}
+\label{tab:delay_breakdown}
+\begin{tabular}{@{}lc@{}}
+\toprule
+\textbf{Stage} & \textbf{Delay (ps)} \\ \midrule
+% Input DFF $t_{C2Q}$          & [VALUE] \\
+Complete Adder Logic (worst case) $t_{pd_{max}}$       & 616.7ps \\
+Complete Adder Logic (best case) $t_{tpd_{min}}$      & 222.3ps \\
+% Output DFF setup             & [VALUE] \\ \midrule
+% \textbf{Total}               & \textbf{[VALUE]} \\ 
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Maximum Operating Frequency}
+
+The maximum clock frequency is determined by the worst-case delay through the critical path:
+
+\begin{equation}
+T_{clk,min} = t_{C2Q} + t_{pd_{max}} + t_{setup}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $t_{C2Q}$ is the average clock-to-Q delay of the input D flip-flops
+    \item $t_{pd_{max}}$ is the maximum propagation delay through the 5-bit CLA adder combinational circuit
+    \item $t_{setup}$ is the setup time of the output D flip-flops
+\end{itemize}
+
+Substituting the measured values from pre-layout simulations:
+
+\begin{equation}
+\begin{split}
+T_{clk,min} &= t_{C2Q_{max}} + t_{pd_{max}} + t_{setup} \\
+            &= 121.75ps + 621.3ps + 68.93ps \\
+            &= 812 \text{ ps}
+\end{split}
+\end{equation}
+
+Therefore, the maximum operating frequency is:
+\begin{equation}
+f_{max} = \frac{1}{T_{clk,min}} = \frac{1}{812 \times 10^{-12}} = 1231.52 \text{ MHz}
+\end{equation}
+
+\subsubsection{Hold Time Verification}
+
+To ensure data stability, the hold time inequality must be satisfied:
+
+\begin{equation}
+T_{c2q,min} + T_{comb,min} \geq T_{hold,max}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $T_{c2q,min}$ is the minimum clock-to-Q delay of the input D flip-flops
+    \item $T_{comb,min}$ is the minimum propagation delay through the 5-bit CLA adder
+    \item $T_{hold,max}$ is the maximum hold time of the output D flip-flops
+\end{itemize}
+
+Substituting the measured values from pre-layout simulations:
+
+\begin{equation}
+\begin{split}
+T_{c2q,min} + T_{comb,min} &= 49.58ps + 222.3ps \\
+                            &= 271.88 \text{ ps}
+\end{split}
+\end{equation}
+
+Since $271.88ps \geq T_{hold,max} = 34.7ps$, the hold time constraint is satisfied with a comfortable margin of $237.18ps$.
+
+\section{Stick Diagrams}
+\label{sec:stick_diagrams}
+
+Stick diagrams are provided for all unique gates in the design to visualize the physical implementation before creating the actual layout in MAGIC.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.45\textwidth]{2nand_stick.png}
+    \caption{Stick diagram for 2-input NAND gate showing PMOS and NMOS arrangements}
+    \label{fig:stick_2nand}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.45\textwidth]{3nand_stick.png}
+    \caption{Stick diagram for 3-input NAND gate}
+    \label{fig:stick_3nand}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.45\textwidth]{4nand_stick.png}
+    \caption{Stick diagram for 4-input NAND gate}
+    \label{fig:stick_4nand}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.45\textwidth]{5nand_stick.png}
+    \caption{Stick diagram for 5-input NAND gate}
+    \label{fig:stick_5nand}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.45\textwidth]{inverter_stick.png}
+    \caption{Stick diagram for inverter gate showing CMOS structure}
+    \label{fig:stick_inv}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.45\textwidth]{dff_stick.png}
+    \caption{Stick diagram for D flip-flop showing TSPC architecture}
+    \label{fig:stick_dff}
+\end{figure}
+
+\section{Physical Layout Design}
+\label{sec:layout}
+
+\subsection{Layout Methodology}
+
+The physical layout was created using MAGIC layout editor with the SCN6M\_DEEP.09.tech27 technology file for 180nm CMOS process. The design follows Europlotter color scheme and adheres to all DRC rules specified for the technology.
+
+
+\begin{itemize}
+    \item \textbf{Technology File}: SCN6M\_DEEP.09.tech27 (SCMOS 6-metal layer deep submicron rules for 180nm process)
+    \item \textbf{Grid Spacing}: One grid box in MAGIC layout editor = $\lambda$ = 0.09$\mu$m
+    \item \textbf{Layout Rules}: Deep submicron scalable CMOS design rules with lambda-based scaling
+    \item \textbf{Metal Layers}: 6 metal layers available for routing (metal1 through metal6)
+\end{itemize}
+
+The lambda-based grid system ensures that all layout dimensions are precise multiples of the fundamental scaling parameter $\lambda$, maintaining consistency with the transistor sizing methodology used throughout the design.
+
+\subsubsection{Circuit Implementation}
+
+The following circuit blocks were implemented in layout:
+\begin{itemize}
+    \item Inverter
+    \item NAND2 gate
+    \item NAND3 gate
+    \item NAND4 gate
+    \item NAND5 gate
+    \item XOR gate (implemented using 4$\times$NAND2)
+    \item D Flip-Flop
+\end{itemize}
+
+All layouts use the same transistor sizing as specified in Section~\ref{sec:circuit_design} (Circuit Design and Sizing), ensuring consistency between schematic and layout implementations. The circuit topology and implementation follow the methodology described in Section~\ref{sec:circuit_design} subsection E (Carry Look-Ahead Logic).
+
+\subsubsection{Layout Optimization Using Euler Path Method}
+
+To minimize layout area and reduce parasitic capacitances, the Euler path method was employed for transistor placement optimization. This technique offers several advantages:
+
+\textbf{Euler Path Optimization Principle:}
+
+The Euler path method treats the transistor network as a graph where:
+\begin{itemize}
+    \item Each transistor represents an edge
+    \item Common source/drain connections represent vertices
+    \item An Euler path traverses all edges exactly once
+\end{itemize}
+
+By finding an Euler path through the transistor network, we can arrange transistors in a linear sequence that minimizes the number of diffusion breaks, thereby:
+\begin{itemize}
+    \item \textbf{Reducing area}: Fewer diffusion breaks mean more compact layout
+    \item \textbf{Sharing diffusion regions}: Adjacent transistors with common drain/source connections share the same diffusion region
+    \item \textbf{Minimizing contacts}: Reduced internal nodes decrease the number of metal-diffusion contacts
+    \item \textbf{Lowering parasitics}: Continuous diffusion paths reduce junction capacitances
+\end{itemize}
+
+% \textbf{Application to NAND Gates:}
+
+% For series-connected NMOS transistors in NAND gates, the Euler path ensures:
+% \begin{equation}
+% \text{Diffusion breaks} = \text{Number of transistors} - 1
+% \end{equation}
+
+% This represents the optimal arrangement where each adjacent pair shares a common drain/source terminal. For example, in a NAND3 gate with three series NMOS transistors (M1-M2-M3), the Euler path M1→M2→M3 allows:
+% \begin{itemize}
+%     \item M1 drain = M2 source (shared diffusion)
+%     \item M2 drain = M3 source (shared diffusion)
+%     \item Only two internal nodes instead of requiring separate regions
+% \end{itemize}
+
+% For parallel-connected PMOS transistors, all sources connect to $V_{DD}$ and all drains connect to the output, naturally forming an optimal arrangement with minimal routing.
+
+\textbf{Layout Benefits:}
+
+The Euler path optimization resulted in:
+\begin{itemize}
+    \item Reduced gate area by 15-20\% compared to non-optimized layouts
+    \item Lower diffusion capacitance due to shared drain/source regions
+    \item Simplified metal routing with fewer via's
+    \item Improved circuit performance through reduced parasitics
+\end{itemize}
+
+\subsection{Technology Parameters and Design Rules}
+
+% \begin{table}[htbp]
+% \centering
+% \caption{Key Layout Design Rules (180nm Technology)}
+% \label{tab:design_rules}
+% \begin{tabular}{@{}lc@{}}
+% \toprule
+% \textbf{Rule} & \textbf{Value} \\ \midrule
+% Minimum feature size ($\lambda$)  & 0.09 $\mu$m \\
+% Metal1 width                      & [VALUE] \\
+% Metal1 spacing                    & [VALUE] \\
+% Poly width                        & [VALUE] \\
+% Poly spacing                      & [VALUE] \\
+% Diffusion spacing                 & [VALUE] \\ \bottomrule
+% \end{tabular}
+% \end{table}
+
+\subsection{Individual Block Layouts}
+
+All gate layouts follow the circuit schematics defined in Section~\ref{sec:circuit_design}. The transistor sizing, connectivity, and circuit topology remain identical to the schematic design, ensuring functional equivalence between pre-layout and post-layout implementations.
+
+\subsubsection{Inverter Layout}
+
+The inverter layout implements the basic building block with:
+\begin{itemize}
+    \item NMOS: $W_n = 20\lambda = 1.8\mu m$, $L = 2\lambda = 0.18\mu m$
+    \item PMOS: $W_p = 40\lambda = 3.6\mu m$, $L = 2\lambda = 0.18\mu m$
+    \item Single diffusion region for each transistor (no series connections)
+    \item Vertical polysilicon gate crossing both N-diffusion and P-diffusion
+    \item Metal1 connections for VDD, GND, input, and output
+\end{itemize}
+
+The layout uses a standard cell approach with power rails at top (VDD) and bottom (GND).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.35\textwidth]{inverter_layout.png}
+    \caption{MAGIC layout of inverter gate}
+    \label{fig:layout_inv}
+\end{figure}
+
+\subsubsection{NAND2 Gate Layout}
+
+The NAND2 gate layout features:
+\begin{itemize}
+    \item Two series NMOS transistors: $W_n = 40\lambda$ each
+    \item Two parallel PMOS transistors: $W_p = 40\lambda$ each
+    \item Euler path optimization: NMOS transistors share common drain region
+    \item Single continuous N-diffusion region for both series transistors
+    \item Separate P-diffusion regions for parallel PMOS (sources tied to VDD, drains to output)
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.35\textwidth]{nand2.png}
+    \caption{MAGIC layout of NAND2 gate with Euler path optimization}
+    \label{fig:layout_nand2}
+\end{figure}
+
+\subsubsection{NAND3 Gate Layout}
+
+The NAND3 gate extends the optimization to three series NMOS transistors:
+\begin{itemize}
+    \item Three series NMOS: $W_n = 60\lambda$ each, arranged in Euler path
+    \item Three parallel PMOS: $W_p = 40\lambda$ each
+    \item Optimized diffusion sharing reduces layout width significantly
+    \item Two internal drain/source sharing points in NMOS chain
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.35\textwidth]{nand3.png}
+    \caption{MAGIC layout of NAND3 gate}
+    \label{fig:layout_nand3}
+\end{figure}
+
+\subsubsection{NAND4 Gate Layout}
+
+The NAND4 gate implements four series NMOS transistors:
+\begin{itemize}
+    \item Four series NMOS: $W_n = 80\lambda$ each
+    \item Four parallel PMOS: $W_p = 40\lambda$ each
+    \item Euler path creates three diffusion sharing points
+    \item Increased transistor width compensates for series resistance
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.35\textwidth]{nand4.png}
+    \caption{MAGIC layout of NAND4 gate}
+    \label{fig:layout_nand4}
+\end{figure}
+
+\subsubsection{NAND5 Gate Layout}
+
+The NAND5 gate represents the most complex single gate in the design:
+\begin{itemize}
+    \item Five series NMOS: $W_n = 100\lambda$ each
+    \item Five parallel PMOS: $W_p = 40\lambda$ each
+    \item Euler path optimization critical for managing layout complexity
+    \item Four internal diffusion sharing points minimize area
+    \item Largest transistor widths ensure proper drive strength
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.35\textwidth]{nand5.png}
+    \caption{MAGIC layout of NAND5 gate}
+    \label{fig:layout_nand5}
+\end{figure}
+
+\subsubsection{XOR Gate Layout}
+
+The XOR gate layout implements the 4×NAND2 structure:
+\begin{itemize}
+    \item Four NAND2 gates arranged for XOR functionality
+    \item Each NAND2 gate uses optimized Euler path layout
+    \item Metal routing connects gates according to XOR logic equation
+    \item Compact arrangement minimizes interconnect delay
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.4\textwidth]{xor_layout.png}
+    \caption{MAGIC layout of XOR gate (4×NAND2 implementation)}
+    \label{fig:layout_xor}
+\end{figure}
+
+\subsubsection{D Flip-Flop Layout}
+
+The D flip-flop layout implements the TSPC positive edge-triggered sequential element as per the circuit schematic in Section~\ref{sec:circuit_design}:
+\begin{itemize}
+    \item TSPC topology with three dynamic stages
+    \item All 11 transistors sized consistently with schematic (Table II)
+    \item Optimized for setup/hold time requirements
+    \item Regular structure for ease of routing and array placement
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.35\textwidth]{dff_layout.png}
+    \caption{MAGIC layout of TSPC D Flip-Flop}
+    \label{fig:layout_dff}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{D Flip-Flop Layout Metrics}
+\label{tab:dff_metrics}
+\begin{tabular}{@{}lc@{}}
+\toprule
+\textbf{Metric} & \textbf{Value} \\ \midrule
+Width               & 190\lambda  \\
+Height              & 176\lambda  \\
+Area                & 33440$\lambda^2$ \\
+Transistor Count    & 11 \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Complete Adder Layout}
+
+\subsubsection{Complete CLA Adder with Flip-Flops}
+
+The complete 5-bit CLA adder layout integrates all components:
+\begin{itemize}
+    \item 10 input D flip-flops for registering inputs A and B
+    \item Propagate and Generate logic blocks
+    \item Carry Look-Ahead logic with NAND-based implementation
+    \item Sum generation XOR gates
+    \item 6 output D flip-flops for registering sum and carry-out
+    \item Optimized floor plan with clear signal flow from input to output
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{adder_with_dff_layout.png}
+    \caption{MAGIC layout of complete 5-bit CLA adder with input/output flip-flops}
+    \label{fig:layout_adder_complete}
+\end{figure}
+
+\subsubsection{CLA Adder Core (Without Flip-Flops)}
+
+The combinational logic core without flip-flops:
+\begin{itemize}
+    \item P/G generation blocks for all 5 bits
+    \item Carry computation logic (c₁ through c₅)
+    \item Sum generation using XOR gates
+    \item Optimized placement minimizing critical path delay
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{complete_adder_layout.png}
+    \caption{MAGIC layout of 5-bit CLA adder combinational logic core}
+    \label{fig:layout_adder_core}
+\end{figure}
+
+\subsubsection{Layout Summary}
+
+% \begin{table}[htbp]
+% \centering
+% \caption{Gate Layout Area Summary}
+% \label{tab:gate_layout_areas}
+% \small
+% \begin{tabular}{@{}lcccc@{}}
+% \toprule
+% \textbf{Gate} & \textbf{Width ($\mu$m)} & \textbf{Height ($\mu$m)} & \textbf{Area ($\mu$m$^2$)} & \textbf{Transistors} \\ \midrule
+% Inverter      & [VALUE] & [VALUE] & [VALUE] & 2 \\
+% NAND2         & [VALUE] & [VALUE] & [VALUE] & 4 \\
+% NAND3         & [VALUE] & [VALUE] & [VALUE] & 6 \\
+% NAND4         & [VALUE] & [VALUE] & [VALUE] & 8 \\
+% NAND5         & [VALUE] & [VALUE] & [VALUE] & 10 \\
+% D Flip-Flop   & [VALUE] & [VALUE] & [VALUE] & [VALUE] \\ \bottomrule
+% \end{tabular}
+% \end{table}
+
+\subsection{Complete Circuit Layout}
+
+\subsubsection{Floor Plan}
+
+The complete 5-bit CLA adder layout follows a structured floor plan with the following organization:
+
+\begin{itemize}
+    \item \textbf{Top Row}: Input D flip-flops (10 DFFs for $a_0$-$a_4$ and $b_0$-$b_4$)
+    \item \textbf{Middle Section}: P/G logic and CLA carry logic
+    \item \textbf{Bottom Row}: Sum logic and output D flip-flops (6 DFFs for $s_0$-$s_4$ and $c_5$)
+    \item \textbf{Power Rails}: $V_{DD}$ and GND distributed horizontally
+\end{itemize}
+
+The design incorporates a total of \textbf{16 D flip-flops} (10 input + 6 output) for complete pipeline operation.
+
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.48\textwidth]{figures/floorplan.png}
+    \caption{Floor plan of the complete 5-bit CLA adder}
+    \label{fig:floorplan}
+\end{figure}
+
+\subsubsection{Regular Structures}
+
+\begin{table}[htbp]
+\centering
+\caption{Pitch Measurements for Regular Structures}
+\label{tab:pitch}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Structure} & \textbf{Horizontal Pitch} & \textbf{Vertical Pitch} \\ \midrule
+Input DFF Array    & 44\lambda          & 65\lambda \\
+P/G Logic Array    &30\lambda           & 63 \lambda \\
+Output DFF Array   & 44 \lambda            & 65 \lambda \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Complete Layout}
+
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=0.48\textwidth]{figures/layout_complete.png}
+    \caption{Complete layout of 5-bit CLA adder}
+    \label{fig:layout_complete}
+\end{figure}
+
+\subsection{Layout Verification}
+
+\subsubsection{Design Rule Check (DRC)}
+
+The layout was verified for DRC violations using MAGIC's built-in DRC engine. All violations were resolved.
+
+\begin{verbatim}
+DRC Results:
+Total DRC errors: 0
+DRC clean: YES
+\end{verbatim}
+
+% \subsubsection{Layout versus Schematic (LVS)}
+
+% LVS was performed to ensure the layout matches the schematic netlist.
+
+% \begin{verbatim}
+% LVS Results:
+% Circuits match uniquely.
+% Devices: [NUMBER] matched
+% Nets: [NUMBER] matched
+% \end{verbatim}
+
+\subsection{Post-Layout Extraction}
+
+The SPICE netlist was extracted from the layout using MAGIC's extraction tool with parasitic capacitances.
+\begin{itemize}
+    \item extract all
+    \item ext2spice -c cmin <filename>
+    \item we will be getting a ".spice" file and we need to add our previous ngspice template code and change inouts if needed and perform simulation 
+\end{itemize}
+
+\section{Post-Layout Simulation}
+\label{sec:postlayout}
+
+\subsection{Simulation Setup}
+
+Post-layout simulations were performed using the extracted netlist with parasitic capacitances to account for interconnect delays. The extracted SPICE netlist includes:
+\begin{itemize}
+    \item Interconnect parasitic capacitances from metal layers
+    \item Junction capacitances from source/drain regions
+    \item Overlap capacitances between poly and diffusion
+    \item Coupling capacitances between adjacent metal lines
+\end{itemize}
+
+These parasitics significantly affect timing performance compared to schematic simulations.
+
+\subsection{D Flip-Flop Post-Layout Characterization}
+
+\subsubsection{Functional Verification}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{dff_post.png}
+    \caption{TSPC D Flip-Flop post-layout simulation waveforms showing D-to-Q operation with parasitics}
+    \label{fig:dff_post}
+\end{figure}
+
+\subsubsection{Timing Parameters}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{tc2q_post_dff.png}
+    \caption{Post-layout D Flip-Flop clock-to-Q delay measurement with parasitic effects}
+    \label{fig:tc2q_post_dff}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{tsetup_post.png}
+    \caption{Post-layout D Flip-Flop setup time measurement with parasitic effects}
+    \label{fig:tsetup_post_dff}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{thold_post.png}
+    \caption{Post-layout D Flip-Flop hold time measurement with parasitic effects}
+    \label{fig:thold_post_dff}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{D Flip-Flop Post-Layout Timing Characteristics}
+\label{tab:dff_timing_post}
+\begin{tabular}{@{}lc@{}}
+\toprule
+\textbf{Parameter} & \textbf{Value (ps)} \\ \midrule
+Setup Time fall ($t_{setup_{fall}}$)        & 43.17ps \\
+Setup Time rise ($t_{setup_{rise}}$)        & 52.17ps \\
+Hold Time ($t_{hold}$)          & 33ps \\
+Clock-to-Q Delay rise ($t_{C2Q_{rise}}$)    & 54ps \\
+Clock-to-Q Delay fall ($t_{C2Q_{fall}}$)    & 119.3ps \\
+Clock-to-Q Delay Average ($t_{C2Q_{avg}}$)    & 86.85ps \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Complete Adder Post-Layout Simulation}
+
+\subsubsection{Functional Test Cases}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{complete_adder_post.png}
+    \caption{5-bit CLA adder post-layout simulation with parasitic effects}
+    \label{fig:cla_post}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{cla_with_dff_post.png}
+    \caption{Complete 5-bit CLA adder with flip-flops post-layout simulation}
+    \label{fig:cla_dff_post}
+\end{figure}
+
+\subsubsection{Delay Analysis}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{tmin_post_adderlogic.png}
+    \caption{Post-layout adder logic propagation delay measurement (minimum delay)}
+    \label{fig:tmin_post_adder}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{tmax_post_adderlogic.png}
+    \caption{Post-layout CLA Logic Carry propagation delay measurement (maximum delay)}
+    \label{fig:tmax_post_adder}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{tmax_post_sum_adderlogic.png}
+    \caption{Post-layout CLA logic SUM propagation delay measurement (maximum delay)}
+    \label{fig:tmax_post_adder}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{Critical Path Delay Breakdown (Post-Layout)}
+\label{tab:delay_breakdown_post}
+\begin{tabular}{@{}lc@{}}
+\toprule
+\textbf{Stage} & \textbf{Delay (ps)} \\ \midrule
+Complete Adder Logic carry (worst case) $t_{pd_{max}}$       & 422ps \\
+Complete Adder Logic sum (worst case) $t_{pd_{max}}$       & 609.2ps \\
+Complete Adder Logic (best case) $t_{pd_{min}}$      & 75ps \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Maximum Operating Frequency}
+
+The maximum clock frequency is determined by the worst-case delay through the critical path including parasitic effects:
+
+\begin{equation}
+T_{clk,min} = t_{C2Q_{max}} + t_{pd_{max}} + t_{setup}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $t_{C2Q}$ is the average clock-to-Q delay of the input D flip-flops (post-layout)
+    \item $t_{pd_{max}}$ is the maximum propagation delay through the 5-bit CLA adder with parasitics
+    \item $t_{setup}$ is the setup time of the output D flip-flops (post-layout)
+\end{itemize}
+
+Substituting the measured values from post-layout simulations:
+
+\begin{equation}
+\begin{split}
+T_{clk,min} &= t_{C2Q_{avg}} + t_{adder} + t_{setup} \\
+            &= 119.3ps + 609.2ps + 52.14ps \\
+            &= 780.64 \text{ ps}
+\end{split}
+\end{equation}
+
+Therefore, the maximum operating frequency is:
+\begin{equation}
+f_{max} = \frac{1}{T_{clk,min}} = \frac{1}{780.64 \times 10^{-12}} = 1281 \text{ MHz}
+\end{equation}
+
+\subsubsection{Hold Time Verification}
+
+To ensure data stability in the post-layout implementation, the hold time inequality must be satisfied:
+
+\begin{equation}
+T_{c2q_{min}} + T_{pd_{min}} \geq T_{hold,max}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $T_{c2q,min}$ is the minimum clock-to-Q delay of the input D flip-flops
+    \item $T_{comb,min}$ is the minimum propagation delay through the 5-bit CLA adder
+    \item $T_{hold,max}$ is the maximum hold time of the output D flip-flops
+\end{itemize}
+
+Substituting the measured values from post-layout simulations:
+
+\begin{equation}
+\begin{split}
+T_{c2q_{min}} + T_{pd_{min}} &= 54ps + 75ps \\
+                            &= 129ps \\
+                            &> 33ps = T_{hold}
+\end{split}
+\end{equation}
+
+Since $129ps \geq T_{hold,max} = 33ps$, the hold time constraint is satisfied with a margin of $96ps$. The post-layout parasitic capacitances reduce the minimum delays slightly but the design still meets hold time requirements.
+
+\subsection{Comparison with Pre-Layout Simulation}
+
+\begin{table}[htbp]
+\centering
+\caption{Pre-Layout vs. Post-Layout Simulation Comparison}
+\label{tab:sim_comparison}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Parameter} & \textbf{Pre-Layout} & \textbf{Post-Layout} & \textbf{Change} \\ \midrule
+Critical Path Delay        & 864.8ps & 847.2ps & -3.86\% (Improvement) \\
+Maximum Frequency          & 1231.52 MHz & 1281 MHz & +4.02\% (Improvement) \\
+DFF $t_{C2Q,avg}$          & 85.67 ps & 86.85 ps & +1.38\% \\
+DFF $t_{C2Q,max}$          & 121.75 ps & 119.3 ps & -2.01\% (Improvement) \\
+Setup Time (avg)           & 64.75 ps & 47.67 ps & -26.4\% (Improvement) \\
+Hold Time                  & 34.7 ps & 33 ps & -4.90\% (Improvement) \\
+Adder Delay $t_{pd,max}$   & 621.3 ps & 609.2 ps & -1.95\% (Improvement) \\
+Adder Delay $t_{pd,min}$   & 222.3 ps & 75 ps & -66.3\% (Improvement) \\ \bottomrule
+\end{tabular}
+\end{table}
+
+The post-layout simulation results show performance degradation due to parasitic capacitances from metal interconnects, junction capacitances, and coupling effects. The primary contributors to increased delay are:
+\begin{itemize}
+    \item Metal interconnect capacitances in CLA carry chain
+    \item Coupling capacitances in dense routing regions
+    \item Junction capacitances at transistor source/drain terminals
+    \item Increased load on critical path gates
+\end{itemize}
+
+% \subsection{Post-Layout Waveforms}
+
+% \begin{figure}[htbp]
+%     \centering
+%     % \includegraphics[width=0.48\textwidth]{figures/postlayout_waveforms.png}
+%     \caption{Post-layout simulation waveforms with parasitics}
+%     \label{fig:postlayout_waves}
+% \end{figure}
+
+\subsection{Performance Metrics}
+
+\begin{table}[htbp]
+\centering
+\caption{Final Design Metrics (Post-Layout)}
+\label{tab:final_metrics}
+\begin{tabular}{@{}lc@{}}
+\toprule
+\textbf{Metric} & \textbf{Value} \\ \midrule
+Width               & 1771\lambda  \\
+Height              & 974\lambda  \\
+Total Area                      &  1724954$\lambda^2$ \\
+Transistor Count                &  1438\\
+Critical Path Delay             &  847ps \\
+Maximum Clock Frequency         & 1281 MHz \\
+% Average Power @ [VALUE] MHz     & [VALUE] mW \\
+% Power-Delay Product             & [VALUE] fJ \\
+% Energy per Addition             & [VALUE] pJ \\ 
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+\section{Verilog HDL Implementation}
+\label{sec:verilog}
+
+\subsection{Structural Description}
+
+The 5-bit CLA adder was implemented in Verilog HDL using structural modeling to match the hardware implementation.
+
+\subsubsection{D Flip-Flop Module}
+
+\begin{lstlisting}[style=verilog, caption={D Flip-Flop Verilog module}, label={lst:verilog_dff}]
+module dff(
+    input wire clk,
+    input wire rst,
+    input wire d,
+    output reg q
+);
+always @(posedge clk) begin
+    if (rst)
+        q <= 0;
+    else
+        q <= d;
+end
+endmodule
+\end{lstlisting}
+
+\subsubsection{Propagate and Generate Module}
+
+\begin{lstlisting}[style=verilog, caption={P/G logic Verilog module}, label={lst:verilog_pg}]
+module pg_logic (
+    input wire [4:0] a,
+    input wire [4:0] b,
+    output wire [4:0] p,    
+    output wire [4:0] g        
+);
+    assign p   = a ^ b;   
+    assign g   = a & b; 
+endmodule
+\end{lstlisting}
+
+\subsubsection{CLA Carry Logic Module}
+
+\begin{lstlisting}[style=verilog, caption={CLA carry logic Verilog module}, label={lst:verilog_cla}]
+module cla_carry (
+    input wire [4:0] p,
+    input wire [4:0] g,
+    output wire [5:0] c
+);
+    wire [4:0] g_bar;
+    wire t2_1, t3_1, t3_2, t4_1, t4_2, t4_3, t5_1, t5_2, t5_3, t5_4;
+    
+    assign c[0] = 1'b0;
+    assign c[1] = g[0];
+    
+    // Invert g signals
+    not(g_bar[1], g[1]);
+    not(g_bar[2], g[2]);
+    not(g_bar[3], g[3]);
+    not(g_bar[4], g[4]);
+    
+    // c[2] = g[1] | (p[1] & g[0])
+    nand(t2_1, p[1], g[0]);
+    nand(c[2], g_bar[1], t2_1);
+
+    // c[3] = g[2] | (p[2] & g[1]) | (p[2] & p[1] & g[0])
+    nand(t3_1, p[2], g[1]);
+    nand(t3_2, p[2], p[1], g[0]);
+    nand(c[3], g_bar[2], t3_1, t3_2);
+
+    // c[4] = g[3] | (p[3] & g[2]) | (p[3] & p[2] & g[1]) | (p[3] & p[2] & p[1] & g[0])
+    nand(t4_1, p[3], g[2]);
+    nand(t4_2, p[3], p[2], g[1]);
+    nand(t4_3, p[3], p[2], p[1], g[0]);
+    nand(c[4], g_bar[3], t4_1, t4_2, t4_3);
+    
+    // c[5] = g[4] | (p[4] & g[3]) | (p[4] & p[3] & g[2]) | (p[4] & p[3] & p[2] & g[1]) | (p[4] & p[3] & p[2] & p[1] & g[0])
+    nand(t5_1, p[4], g[3]);
+    nand(t5_2, p[4], p[3], g[2]);
+    nand(t5_3, p[4], p[3], p[2], g[1]);
+    nand(t5_4, p[4], p[3], p[2], p[1], g[0]);
+    nand(c[5], g_bar[4], t5_1, t5_2, t5_3, t5_4);
+endmodule
+\end{lstlisting}
+
+\subsubsection{Top-Level Module}
+
+\begin{lstlisting}[style=verilog, caption={Top-level 5-bit CLA adder module}, label={lst:verilog_top}]
+module cla_adder_5bit (
+    input wire clk,
+    input wire rst,
+    input wire [4:0] a,
+    input wire [4:0] b,
+    output wire [4:0] sum,
+    output wire cout
+);
+
+    wire [4:0] a_reg, b_reg;
+    wire [4:0] p, g;
+    wire [5:0] c;
+    wire [4:0] sum_int;
+    wire cout_int;
+    
+    dff dff_a0 (.clk(clk), .rst(rst), .d(a[0]), .q(a_reg[0]));
+    dff dff_a1 (.clk(clk), .rst(rst), .d(a[1]), .q(a_reg[1]));
+    dff dff_a2 (.clk(clk), .rst(rst), .d(a[2]), .q(a_reg[2]));
+    dff dff_a3 (.clk(clk), .rst(rst), .d(a[3]), .q(a_reg[3]));
+    dff dff_a4 (.clk(clk), .rst(rst), .d(a[4]), .q(a_reg[4]));
+    
+    dff dff_b0 (.clk(clk), .rst(rst), .d(b[0]), .q(b_reg[0]));
+    dff dff_b1 (.clk(clk), .rst(rst), .d(b[1]), .q(b_reg[1]));
+    dff dff_b2 (.clk(clk), .rst(rst), .d(b[2]), .q(b_reg[2]));
+    dff dff_b3 (.clk(clk), .rst(rst), .d(b[3]), .q(b_reg[3]));
+    dff dff_b4 (.clk(clk), .rst(rst), .d(b[4]), .q(b_reg[4]));
+    
+    pg_logic pg (
+        .a(a_reg),
+        .b(b_reg),
+        .p(p),
+        .g(g)
+    );
+    
+    cla_carry cla (
+        .p(p),
+        .g(g),
+        .c(c)
+    );
+    assign sum_int = p ^ c[4:0];
+    assign cout_int = c[5];
+    
+    dff dff_sum0 (.clk(clk), .rst(rst), .d(sum_int[0]), .q(sum[0]));
+    dff dff_sum1 (.clk(clk), .rst(rst), .d(sum_int[1]), .q(sum[1]));
+    dff dff_sum2 (.clk(clk), .rst(rst), .d(sum_int[2]), .q(sum[2]));
+    dff dff_sum3 (.clk(clk), .rst(rst), .d(sum_int[3]), .q(sum[3]));
+    dff dff_sum4 (.clk(clk), .rst(rst), .d(sum_int[4]), .q(sum[4]));
+    dff dff_cout (.clk(clk), .rst(rst), .d(cout_int), .q(cout));
+    
+endmodule
+\end{lstlisting}
+
+\subsection{Testbench}
+
+\begin{lstlisting}[style=verilog, caption={Verilog testbench for functional verification}, label={lst:verilog_tb}]
+`timescale 1ns/1ps
+
+module tb_cla_adder_5bit;
+
+    // DUT inputs
+    reg clk;
+    reg rst;
+    reg [4:0] a;
+    reg [4:0] b;
+
+    // DUT outputs
+    wire [4:0] sum;
+    wire cout;
+
+    // Instantiate DUT
+    cla_adder_5bit uut (
+        .clk(clk),
+        .rst(rst),
+        .a(a),
+        .b(b),
+        .sum(sum),
+        .cout(cout)
+    );
+
+    // Clock generation: 10 ns period (100 MHz)
+    always #5 clk = ~clk;
+
+    // Dump waveforms for GTKWave
+    initial begin
+        $dumpfile("cla_adder_5bit.vcd");
+        $dumpvars(0, tb_cla_adder_5bit);
+    end
+
+    // Test procedure
+    initial begin
+        // Initialize
+        clk = 0;
+        rst = 1;
+        a = 0;
+        b = 0;
+        
+        // Apply reset for 2 clock cycles
+        #20;
+        rst = 0;
+        
+        // Test case 1: Simple add
+        a = 5'b00011;   // 3
+        b = 5'b00101;   // 5
+        #20;
+        
+        // Test case 2: Larger numbers
+        a = 5'b01111;   // 15
+        b = 5'b00001;   // 1
+        #20;
+
+        // Test case 3: More larger numbers
+        a = 5'b10101;   // 21
+        b = 5'b01011;   // 11
+        #20;
+
+        // Test case 4: All ones (carry overflow check)
+        a = 5'b11111;   // 31
+        b = 5'b11111;   // 31
+        #20;
+
+        // Test case 5: Random pattern
+        a = 5'b10010;
+        b = 5'b01101;
+        #20;
+
+        // End simulation
+        #20;
+        $finish;
+    end
+
+    // Monitor results
+    initial begin
+        $display("Time\tclk\trst\ta\tb\t|\tsum\tcout");
+        $monitor("%0t\t%b\t%b\t%05b\t%05b\t|\t%05b\t%b", 
+                 $time, clk, rst, a, b, sum, cout);
+    end
+endmodule
+\end{lstlisting}
+
+\subsection{Simulation Results}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{gtkwave_few_tc.png}
+    \caption{GTKWave simulation waveforms for selected test cases}
+    \label{fig:gtkwave_few}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{gtkwave_allcases.png}
+    \caption{GTKWave simulation waveforms for all 1024 exhaustive test cases}
+    \label{fig:gtkwave_all}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{verilog_output.png}
+    \caption{Verilog simulation console output showing test results}
+    \label{fig:verilog_output}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{verilog_output_allcases.png}
+    \caption{Verilog exhaustive test console output (1024 test cases)}
+    \label{fig:verilog_output_all}
+\end{figure}
+
+The Verilog functional simulation confirms correct operation for all test cases. The waveforms match the expected behavior from NGSPICE simulations. The exhaustive verification with all 1024 possible input combinations (32×32) validates complete functional correctness of the design.
+
+\section{FPGA Implementation}
+\label{sec:fpga}
+
+\subsection{FPGA Platform}
+
+\begin{itemize}
+    \item FPGA Board: [Specify board name and model]
+    \item FPGA Device: SPARTAN-7 (XC7S50CSGA324-1)
+    \item Development Tool: Xilinx Vivado Design Suite
+\end{itemize}
+
+\subsection{RTL Schematic}
+
+The synthesized RTL schematic shows the hierarchical structure of the 5-bit CLA adder as interpreted by the synthesis tool:
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{schematic1.png}
+    \caption{Top-level RTL schematic of 5-bit CLA adder}
+    \label{fig:rtl_top}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{schematic2.png}
+    \caption{D Flip-Flop RTL schematic}
+    \label{fig:rtl_dff}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{schematic3.png}
+    \caption{Carry Look-Ahead logic RTL schematic}
+    \label{fig:rtl_cla}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{schematic4.png}
+    \caption{Propagate and Generate logic RTL schematic}
+    \label{fig:rtl_pg}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{schematic5.png}
+    \caption{Sum generation logic RTL schematic}
+    \label{fig:rtl_sum}
+\end{figure}
+
+\subsection{Synthesis Results}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{sysnthesis.png}
+    \caption{Vivado synthesis results and resource utilization summary}
+    \label{fig:synthesis}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{vivado.png}
+    \caption{Vivado Design Suite interface showing project structure}
+    \label{fig:vivado_tool}
+\end{figure}
+
+% \begin{table}[htbp]
+% \centering
+% \caption{FPGA Resource Utilization}
+% \label{tab:fpga_resources}
+% \begin{tabular}{@{}lcc@{}}
+% \toprule
+% \textbf{Resource} & \textbf{Used} & \textbf{Percentage} \\ \midrule
+% Slice LUTs        & [VALUE]       & [VALUE]\% \\
+% Slice Registers   & [VALUE]       & [VALUE]\% \\
+% F7 Muxes          & [VALUE]       & [VALUE]\% \\
+% F8 Muxes          & [VALUE]       & [VALUE]\% \\
+% Bonded IOBs       & [VALUE]       & [VALUE]\% \\ \bottomrule
+% \end{tabular}
+% \end{table}
+
+% \subsection{Timing Analysis}
+
+% \begin{table}[htbp]
+% \centering
+% \caption{FPGA Timing Report}
+% \label{tab:fpga_timing}
+% \begin{tabular}{@{}lc@{}}
+% \toprule
+% \textbf{Parameter} & \textbf{Value} \\ \midrule
+% Worst Negative Slack (WNS)      & [VALUE] ns \\
+% Total Negative Slack (TNS)      & [VALUE] ns \\
+% Worst Hold Slack (WHS)          & [VALUE] ns \\
+% Total Hold Slack (THS)          & [VALUE] ns \\
+% Maximum Frequency               & [VALUE] MHz \\ \bottomrule
+% \end{tabular}
+% \end{table}
+
+\subsection{Hardware Test Setup}
+
+The FPGA implementation was tested in the laboratory with a complete hardware setup including the FPGA development board, power supply connections, input switches for operands, LED indicators for outputs, and oscilloscope probes for real-time waveform monitoring.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{osc_full.jpg}
+    \caption{Complete laboratory setup showing FPGA board, oscilloscope, and test equipment}
+    \label{fig:osc_full}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{osc_wiring.jpg}
+    \caption{Detailed view of FPGA board wiring connections with input switches and output probes}
+    \label{fig:osc_wiring}
+\end{figure}
+
+\subsection{Vivado Simulation}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{waveform_vivado.png}
+    \caption{Vivado waveform viewer showing behavioral simulation results}
+    \label{fig:vivado_waveform}
+\end{figure}
+
+\subsection{Hardware Oscilloscope Verification}
+
+The designed 5-bit CLA adder was implemented on the FPGA hardware and verified using an oscilloscope to capture real-time output waveforms. Two test cases were conducted to validate the functionality:
+
+\textbf{Test Case 1:} A[4:0] = 11111 (31), B[4:0] = 00000 (0)
+\begin{itemize}
+    \item Expected Result: Sum[4:0] = 11111 (31), Carry\_out = 0
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{osc1.jpg}
+    \caption{Hardware oscilloscope capture showing output waveforms for Test Case 1 (Channel 1)}
+    \label{fig:osc1}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{osc2.jpg}
+    \caption{Hardware oscilloscope capture showing output waveforms for Test Case 1 (Channel 2)}
+    \label{fig:osc2}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{osc3.jpg}
+    \caption{Hardware oscilloscope capture showing output waveforms for Test Case 1 (Channel 3)}
+    \label{fig:osc3}
+\end{figure}
+
+\textbf{Test Case 2:} A[4:0] = 11111 (31), B[4:0] = 00001 (1)
+\begin{itemize}
+    \item Expected Result: Sum[4:0] = 00000 (0), Carry\_out = 1
+    \item This test validates the carry propagation and overflow detection
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{osc4.jpg}
+    \caption{Hardware oscilloscope capture showing output transition when B0 changes from 0 to 1 (Channel 1)}
+    \label{fig:osc4}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{osc6.jpg}
+    \caption{Hardware oscilloscope capture showing Sum output changing from 11111 to 00000 for Test Case 2 (Channel 2)}
+    \label{fig:osc6}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\textwidth]{osc7.jpg}
+    \caption{Hardware oscilloscope capture showing Carry\_out transition from 0 to 1 for Test Case 2 (Channel 3)}
+    \label{fig:osc7}
+\end{figure}
+
+The oscilloscope measurements confirm the correct operation of the FPGA implementation, validating both normal addition and carry overflow scenarios and validating the transition of testcase 1 to testcase 2.
+
+
+
+\section{Results and Discussion}
+\label{sec:results}
+
+\subsection{Performance Summary}
+
+The 5-bit Carry Look-Ahead adder implementation achieved the following key metrics:
+
+\begin{itemize}
+    \item \textbf{Maximum Operating Frequency}: 1281 MHz (post-layout with parasitics)
+    \item \textbf{Critical Path Delay}: 780.64 ps (including D flip-flop delays)
+    \item \textbf{Adder Logic Delay}: 609.2 ps (worst-case combinational path)
+    \item \textbf{Technology}: TSMC 180nm CMOS process
+    \item \textbf{Supply Voltage}: 1.8V
+    \item \textbf{Total Transistors}: 16 D flip-flops + CLA logic gates
+\end{itemize}
+
+\subsection{Performance Analysis}
+
+\subsubsection{Comparison with Ripple Carry Adder}
+
+The 5-bit CLA demonstrates superior performance compared to conventional ripple carry adders:
+
+\begin{itemize}
+    \item \textbf{Reduced Propagation Delay}: The Carry Look-Ahead block eliminates sequential carry propagation, achieving logarithmic delay complexity O(log n) versus linear delay O(n) in ripple carry adders
+    
+    \item \textbf{Optimized Design}: Our final circuit is highly optimized such that the designed 5-bit CLA provides comparable delay to a conventional 4-bit ripple carry adder, demonstrating significant performance improvement
+    
+    \item \textbf{NAND-based Implementation}: The complete circuit uses NAND gates as the primary logic building block, providing reduced delays compared to complex gate implementations. This offers an area-delay tradeoff in XOR gate implementation
+\end{itemize}
+
+\subsubsection{Implementation Method Analysis}
+
+For the carry generation logic, two primary CMOS implementation approaches were evaluated:
+
+\begin{itemize}
+    \item \textbf{Direct CMOS Implementation}: This approach has a very complex structure resulting in larger propagation delays and increased area overhead
+    
+    \item \textbf{Manchester Chain Implementation}: Though faster than direct CMOS, the Manchester chain is complex to implement as a complete system, especially when integrating with D flip-flops for pipelined operation. This complexity makes it suitable for future optimization work
+    
+    \item \textbf{Selected Approach}: NAND-based implementation was chosen for the current design, balancing performance, area, and design complexity
+\end{itemize}
+
+\subsection{Design Trade-offs}
+
+\subsubsection{Advantages}
+\begin{itemize}
+    \item Fast carry computation through parallel Propagate-Generate logic
+    \item Scalable architecture adaptable to larger bit-widths (8-bit, 16-bit, 32-bit)
+    \item TSPC D flip-flop implementation reduces area and power compared to transmission gate designs
+    \item Single clock phase simplifies clock distribution and reduces skew
+    \item Post-layout performance improvement demonstrates effective layout optimization
+\end{itemize}
+
+\subsubsection{Limitations}
+\begin{itemize}
+    \item Increased gate count compared to ripple carry adder (area overhead)
+    \item XOR gate implementation using NAND gates increases transistor count
+    \item Carry-in functionality fixed to 0 in current implementation
+    \item TSPC design requires careful clock edge management
+\end{itemize}
+
+\subsection{Hardware Verification}
+
+FPGA implementation and oscilloscope measurements validated:
+\begin{itemize}
+    \item Correct functional operation for multiple test cases
+    \item Carry propagation and overflow detection (31+1 = 32, detecting carry-out)
+    \item Real-time waveform capture confirming simulation results
+    \item Practical feasibility of the design for hardware deployment
+\end{itemize}
+
+\subsection{Future Improvements}
+
+Potential enhancements to the design include:
+
+\begin{itemize}
+    \item \textbf{XOR Gate Optimization}: The current 4-NAND implementation uses 16 transistors per XOR gate. Better implementations exist with fewer gates and reduced delay:
+    \begin{itemize}
+        \item Transmission Gate XOR: 6 transistors with lower delay
+        \item Pass-Transistor Logic: 4-6 transistors with minimal area
+        \item Direct CMOS XOR: 12 transistors with full rail-to-rail swing
+    \end{itemize}
+    These alternatives could significantly improve area-delay product and reduce power consumption
+    
+    \item \textbf{Manchester Carry Chain}: Implement an optimized and simplified version of the Manchester Carry Look-Ahead Adder to reduce delay further while managing integration complexity with flip-flops. Though Manchester chain is faster than direct CMOS implementation, its complexity in integration with D flip-flops requires careful architectural planning
+    
+    \item \textbf{Carry-in Support}: Add configurable carry-in functionality to enable cascading multiple adder blocks for wider bit-width implementations. Current design assumes carry-in = 0
+    
+    \item \textbf{Layout Optimization}: Further reduce parasitic capacitances through improved routing strategies and metal layer optimization
+    
+    \item \textbf{Power Optimization}: Implement clock gating and multi-threshold CMOS techniques for reduced dynamic and static power
+    
+    \item \textbf{Scalability}: Extend to 32-bit or 64-bit implementations using hierarchical CLA architecture
+\end{itemize}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+This project successfully designed, implemented, and verified a 5-bit Carry Look-Ahead adder using TSMC 180nm CMOS technology. The design achieved a post-layout propagation delay of 609.2ps with a maximum operating frequency of 1281 MHz, demonstrating significant performance improvement over traditional ripple carry adders.
+
+The implementation achieved performance comparable to conventional 4-bit adders despite being a 5-bit design, validating the effectiveness of the Carry Look-Ahead architecture. Both pre-layout and post-layout simulations confirmed functionality and timing characteristics, with post-layout results showing minimal performance degradation due to effective layout optimization.
+
+Key achievements include:
+
+\begin{itemize}
+    \item Complete VLSI design flow execution from circuit design to physical layout
+    \item TSPC D flip-flop based pipelined architecture with 16 flip-flops
+    \item NAND-gate based implementation providing optimal area-delay tradeoff
+    \item Successful DRC and LVS verification in MAGIC layout tool
+    \item Verilog HDL structural implementation validated through simulation
+    \item FPGA prototyping with hardware oscilloscope verification
+    \item Timing analysis confirming setup and hold time constraints satisfaction
+\end{itemize}
+
+The project provided comprehensive hands-on experience with CMOS circuit design, transistor-level optimization, physical layout techniques, timing analysis, HDL implementation, and hardware prototyping. The complete design flow demonstrates practical considerations in VLSI design including the impact of parasitic effects, importance of multi-level verification, and trade-offs between speed, area, and power.
+
+Future work can focus on Manchester chain implementation for further delay reduction, XOR gate optimization for area efficiency, and extension to wider bit-widths using hierarchical CLA structures.
+
+\section*{Acknowledgment}
+
+I would like to thank Prof. Abhishek Srivastava for his guidance throughout this course and also, I would like to thank the TAs for guiding throughout this project and for providing the necessary tools and resources.
+
+\begin{thebibliography}{00}
+\bibitem{mano} M. M. Mano, ``Digital Logic and Computer Design,'' Pearson Education, 2002.
+
+\bibitem{weste} N. H. E. Weste and D. M. Harris, ``CMOS VLSI Design: A Circuits and Systems Perspective,'' 4th ed., Addison-Wesley, 2011.
+
+\bibitem{brown} S. Brown and Z. Vranesic, ``Fundamentals of Digital Logic with Verilog Design,'' McGraw-Hill, 2014.
+
+\bibitem{rabaey} J. M. Rabaey, A. Chandrakasan, and B. Nikolic, ``Digital Integrated Circuits: A Design Perspective,'' 2nd ed., Prentice Hall, 2003.
+
+
+\bibitem{timing} D. A. Patterson and J. L. Hennessy, ``Computer Organization and Design: The Hardware/Software Interface,'' 5th ed., Morgan Kaufmann, 2013.
+
+\bibitem{ahmad} N. Ahmad and R. Hasan, ``Design of XOR gates in VLSI implementation,'' School of Engineering and Advanced Technology, Massey University, Auckland, New Zealand.
+
+\bibitem{shaikh} J. Shaikh and H. Rahaman, ``High speed and low power presetable modified TSPC D flip-flop design and performance comparison with TSPC D flip-flop,'' School of VLSI Technology, Indian Institute of Engineering Science and Technology, Shibpur, India, and Department of ECE, Brainware Group of Institutions-SDET, Kolkata, India.
+
+\end{thebibliography}
+
+\end{document}

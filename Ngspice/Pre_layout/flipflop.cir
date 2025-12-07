@@ -1,0 +1,99 @@
+* Akshay Chanda 2024102014 
+.include TSMC_180nm.txt
+.param LAMBDA = 0.09u
+.global gnd vdd
+.param k = 2
+
+.subckt dff in clk out vdd gnd
+
+.param k=2
+
+M1 c1a in vdd vdd CMOSP W={k*40*LAMBDA} L={2*LAMBDA}
++ AS={5*k*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*40*LAMBDA} 
++ AD={5*k*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*40*LAMBDA}
+M2 c1b clk c1a vdd CMOSP W={k*40*LAMBDA} L={2*LAMBDA}
++ AS={5*k*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*40*LAMBDA} 
++ AD={5*k*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*40*LAMBDA}
+M3 c1b in gnd gnd CMOSN W={20*LAMBDA} L={2*LAMBDA}
++ AS={5*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*20*LAMBDA}
++ AD={5*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*20*LAMBDA}
+
+M4 c2a clk vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M5 c2a c1b c2b gnd CMOSN W={40*LAMBDA} L={2*LAMBDA}
++ AS={5*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*40*LAMBDA}
++ AD={5*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*40*LAMBDA}
+M6 c2b clk gnd gnd CMOSN W={40*LAMBDA} L={2*LAMBDA}
++ AS={5*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*40*LAMBDA}
++ AD={5*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*40*LAMBDA}
+
+
+M7 c3a c2a vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M8 c3a clk c3b gnd CMOSN W={40*LAMBDA} L={2*LAMBDA}
++ AS={5*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*40*LAMBDA}
++ AD={5*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*40*LAMBDA}
+M9 c3b c2a gnd gnd CMOSN W={40*LAMBDA} L={2*LAMBDA}
++ AS={5*40*LAMBDA*LAMBDA} PS={10*LAMBDA+2*40*LAMBDA}
++ AD={5*40*LAMBDA*LAMBDA} PD={10*LAMBDA+2*40*LAMBDA}
+
+M10 out c3a vdd vdd CMOSP W={k*20*LAMBDA} L={2*LAMBDA}
++ AS={5*k*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*k*20*LAMBDA}
++ AD={5*k*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*k*20*LAMBDA}
+M11 out c3a gnd gnd CMOSN W={20*LAMBDA} L={2*LAMBDA}
++ AS={5*20*LAMBDA*LAMBDA} PS={10*LAMBDA+2*20*LAMBDA}
++ AD={5*20*LAMBDA*LAMBDA} PD={10*LAMBDA+2*20*LAMBDA}
+
+.ends dff
+
+vdd vdd gnd 1.8
+
+Vclk clk gnd PULSE(0 1.8 1n 0 0 5n 10n)
+
+Vin in gnd PWL( 0n 0
++ 8n 0   8.1n 1.8
++ 18n 1.8 18.1n 0
++ 28n 0  28.1n 1.8
++ 38n 1.8 38.1n 0 )
+
+Xdff in clk out vdd gnd dff
+
+.save v(in) v(clk) v(out) v(xdff.c1b) v(xdff.c2a) v(xdff.c3a)
+.tran 1p 50n
+
+
+.control
+run
+set curplottitle = "Akshay Chanda 2024102014 - D_flipflop Pre-layout and TC2Q"
+plot v(clk) v(in)+4 v(out)+2
+
+set curplottitle = "Akshay Chanda 2024102014 - Setup"
+plot v(in) v(xdff.c1b)+2 v(xdff.c2a)+4
+
+* Measure clock-to-Q rise time (tC2Q_rise) - when output rises after clock edge
+meas tran tC2Q_rise TRIG v(clk) VAL=0.9 RISE=4 TARG v(out) VAL=0.9 RISE=2
+
+* Measure clock-to-Q fall time (tC2Q_fall) - when output falls after clock edge  
+meas tran tC2Q_fall TRIG v(clk) VAL=0.9 RISE=3 TARG v(out) VAL=0.9 FALL=2
+
+* Measure average clock-to-Q delay
+* meas tran tC2Q_avg param='(tC2Q_rise+tC2Q_fall)/2'
+
+* Measure input-to-c1b rise time
+meas tran t_in_c1b_fall TRIG v(in) VAL=0.9 RISE=1 TARG v(xdff.c1b) VAL=0.9 FALL=1
+
+* Measure input-to-c1b fall time
+meas tran t_in_c1b_rise TRIG v(in) VAL=0.9 FALL=1 TARG v(xdff.c1b) VAL=0.9 RISE=1
+
+
+
+.endc
+
+.end
+
+* tc2q_rise           =  4.958509e-11 targ=  3.105009e-08 trig=  3.100050e-08
+* tc2q_fall           =  1.217517e-10 targ=  2.112225e-08 trig=  2.100050e-08
+* t_in_c1b_fall       =  6.893660e-11 targ=  8.118937e-09 trig=  8.050000e-09
+* t_in_c1b_rise       =  6.068387e-11 targ=  1.811068e-08 trig=  1.805000e-08

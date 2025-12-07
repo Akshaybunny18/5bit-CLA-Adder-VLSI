@@ -1,0 +1,53 @@
+[*]
+[*] GTKWave Analyzer v3.3.118 (w)1999-2023 BSI
+[*] Wed Dec 03 14:53:19 2025
+[*]
+[dumpfile] "C:\Users\aksha\Desktop\M-25\VLSI\2025\Project\Verilog\cla_adder_5bit.vcd"
+[dumpfile_mtime] "Wed Dec 03 14:50:04 2025"
+[dumpfile_size] 5468
+[savefile] "C:\Users\aksha\Desktop\M-25\VLSI\2025\Project\Verilog\wave_form_test_cases.gtkw"
+[timestart] 0
+[size] 1280 649
+[pos] -61 -42
+*-15.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 174
+[signals_width] 94
+[sst_expanded] 1
+[sst_vpaned_height] 174
+@28
+tb_cla_adder_5bit.rst
+tb_cla_adder_5bit.clk
+@800029
+tb_cla_adder_5bit.a[4:0]
+@29
+(0)tb_cla_adder_5bit.a[4:0]
+(1)tb_cla_adder_5bit.a[4:0]
+(2)tb_cla_adder_5bit.a[4:0]
+(3)tb_cla_adder_5bit.a[4:0]
+(4)tb_cla_adder_5bit.a[4:0]
+@1001209
+-group_end
+@800028
+tb_cla_adder_5bit.b[4:0]
+@28
+(0)tb_cla_adder_5bit.b[4:0]
+(1)tb_cla_adder_5bit.b[4:0]
+(2)tb_cla_adder_5bit.b[4:0]
+(3)tb_cla_adder_5bit.b[4:0]
+(4)tb_cla_adder_5bit.b[4:0]
+@1001208
+-group_end
+@800028
+tb_cla_adder_5bit.sum[4:0]
+@28
+(0)tb_cla_adder_5bit.sum[4:0]
+(1)tb_cla_adder_5bit.sum[4:0]
+(2)tb_cla_adder_5bit.sum[4:0]
+(3)tb_cla_adder_5bit.sum[4:0]
+(4)tb_cla_adder_5bit.sum[4:0]
+@1001208
+-group_end
+@28
+tb_cla_adder_5bit.cout
+[pattern_trace] 1
+[pattern_trace] 0
