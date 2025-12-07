@@ -12,9 +12,11 @@
 This project presents the complete design, simulation, and implementation of a **5-bit Carry Look-Ahead (CLA) Adder** using 180nm CMOS technology. The adder operates at VDD = 1.8V and includes a comprehensive design flow from circuit-level simulations to FPGA implementation.
 
 ### Key Achievements
-- **Maximum Operating Frequency:** 1281 MHz
-- **Worst-case Delay:** 609.2 ps
-- **Best-case Delay:** 222.3 ps
+- **Maximum Operating Frequency:** 1281 MHz (Post-Layout)
+- **Post-Layout Worst-case Delay:** 609.2 ps (Sum logic)
+- **Post-Layout Best-case Delay:** 75 ps
+- **Pre-Layout Worst-case Delay:** 621.3 ps
+- **Pre-Layout Best-case Delay:** 222.3 ps
 - **Technology:** TSMC 180nm CMOS process
 - **Design Methodology:** Full custom VLSI design with hierarchical approach
 
@@ -200,22 +202,57 @@ Each output drives an inverter with Wp/Wn = 20λ/10λ
 | Clock-to-Q Delay (fall) | 121.75 |
 | Clock-to-Q Delay (avg) | 85.67 |
 
-### CLA Adder Performance (Pre-Layout)
+### CLA Adder Performance
+
+#### Pre-Layout Results
 
 | Metric | Value |
 |--------|-------|
+| Worst-case Delay (tpd_max) | 621.3 ps |
 | Best-case Delay (tpd_min) | 222.3 ps |
-| Worst-case Delay (tpd_max) | 616.7 ps |
-| **Maximum Clock Frequency** | **1281 MHz** |
-| Minimum Clock Period | 780.9 ps |
+| Maximum Clock Frequency | 1231.52 MHz |
+| Minimum Clock Period | 812 ps |
 
-**Clock Period Calculation:**
+**Pre-Layout Clock Period Calculation:**
 ```
 Tclk_min = tC2Q_max + tpd_CLA_max + tsetup_max
-         = 85.67 ps + 616.7 ps + 68.9 ps
-         = 771.27 ps
+         = 121.75 ps + 621.3 ps + 68.93 ps
+         = 812 ps
+fmax = 1 / Tclk_min ≈ 1231.52 MHz
+```
+
+#### Post-Layout Results
+
+| Metric | Value |
+|--------|-------|
+| Carry Logic Delay (worst) | 422 ps |
+| Sum Logic Delay (worst) | 609.2 ps |
+| Best-case Delay (tpd_min) | 75 ps |
+| **Maximum Clock Frequency** | **1281 MHz** |
+| Minimum Clock Period | 780.64 ps |
+
+**Post-Layout Clock Period Calculation:**
+```
+Tclk_min = tC2Q_avg + tpd_adder_max + tsetup
+         = 119.3 ps + 609.2 ps + 52.14 ps
+         = 780.64 ps
 fmax = 1 / Tclk_min ≈ 1281 MHz
 ```
+
+### Pre-Layout vs Post-Layout Comparison
+
+| Parameter | Pre-Layout | Post-Layout | Change |
+|-----------|-----------|-------------|---------|
+| Critical Path Delay | 864.8 ps | 847.2 ps | -3.86% ✓ |
+| Maximum Frequency | 1231.52 MHz | 1281 MHz | +4.02% ✓ |
+| DFF tC2Q (avg) | 85.67 ps | 86.85 ps | +1.38% |
+| DFF tC2Q (max) | 121.75 ps | 119.3 ps | -2.01% ✓ |
+| Setup Time (avg) | 64.75 ps | 47.67 ps | -26.4% ✓ |
+| Hold Time | 34.7 ps | 33 ps | -4.90% ✓ |
+| Adder Delay (max) | 621.3 ps | 609.2 ps | -1.95% ✓ |
+| Adder Delay (min) | 222.3 ps | 75 ps | -66.3% ✓ |
+
+**Note:** Post-layout results show improvement due to optimized layout and reduced parasitic effects in the actual implementation.
 
 ### Critical Path
 The critical path goes through:
@@ -329,13 +366,17 @@ vivado project_1.xpr
 
 ## Results Summary
 
-### Design Comparison
+### Performance Metrics
 
-| Aspect | Pre-Layout | Post-Layout |
-|--------|-----------|-------------|
-| Adder Delay (worst) | 616.7 ps | ~609.2 ps |
-| Adder Delay (best) | 222.3 ps | Similar |
-| Max Frequency | 1281 MHz | ~1280 MHz |
+| Metric | Pre-Layout | Post-Layout | Improvement |
+|--------|-----------|-------------|-------------|
+| **Max Frequency** | 1231.52 MHz | **1281 MHz** | +4.02% |
+| **Critical Path** | 864.8 ps | 847.2 ps | -3.86% |
+| Adder Delay (worst) | 621.3 ps | 609.2 ps | -1.95% |
+| Adder Delay (best) | 222.3 ps | 75 ps | -66.3% |
+| DFF Clock-to-Q (max) | 121.75 ps | 119.3 ps | -2.01% |
+| DFF Setup Time (avg) | 64.75 ps | 47.67 ps | -26.4% |
+| DFF Hold Time | 34.7 ps | 33 ps | -4.90% |
 
 ### Key Accomplishments
 
