@@ -1,5 +1,8 @@
 # VLSI Project files
 *.pdf
+# But include important project PDFs
+!Course_Project_VLSI_Design_2025.pdf
+!Report_5bit-CLA-Adder-VLSI.pdf
 *.aux
 *.log
 *.out
